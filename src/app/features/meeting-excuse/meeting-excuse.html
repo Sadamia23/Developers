@@ -1,0 +1,322 @@
+<!-- features/meeting-excuse/meeting-excuse.component.html -->
+<app-navbar></app-navbar>
+
+<div class="meeting-excuse-container">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="header-content">
+      <h1 class="main-title">🏃‍♂️ Meeting Escape Generator</h1>
+      <p class="subtitle">Get out of boring meetings with style and creativity!</p>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div *ngIf="meetingExcuseService.isLoading()" class="loading-overlay">
+    <div class="loading-spinner"></div>
+    <p>Crafting your perfect excuse...</p>
+  </div>
+
+  <!-- Dashboard Stats -->
+  <div *ngIf="dashboard() as dashboardData" class="dashboard-section">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">📊</div>
+        <div class="stat-content">
+          <h3>{{ dashboardData.userStats.totalExcusesGenerated || 0 }}</h3>
+          <p>Excuses Generated</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">⭐</div>
+        <div class="stat-content">
+          <h3>{{ dashboardData.userStats.totalFavorites || 0 }}</h3>
+          <p>Favorites Saved</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">🔥</div>
+        <div class="stat-content">
+          <h3>{{ dashboardData.userStats.currentStreak || 0 }}</h3>
+          <p>Current Streak</p>
+        </div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-icon">🎯</div>
+        <div class="stat-content">
+          <h3>{{ (dashboardData.userStats.averageBelievability || 0).toFixed(1) }}</h3>
+          <p>Avg Believability</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Excuse of the Day -->
+  <div *ngIf="dashboard() as dashboardData" class="excuse-of-day-section">
+    <div *ngIf="dashboardData.excuseOfTheDay as excuseOfDay">
+      <h2 class="section-title">🌟 Excuse of the Day</h2>
+      <div class="excuse-card featured">
+        <div class="excuse-content">
+          <p class="excuse-text">"{{ excuseOfDay.excuseText }}"</p>
+          <div class="excuse-meta">
+            <span class="category">{{ getCategoryDisplay(excuseOfDay.category) }}</span>
+            <span class="type">{{ getTypeDisplay(excuseOfDay.type) }}</span>
+            <span class="believability">{{ excuseOfDay.believabilityScore }}/10 believable</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Generator Section -->
+  <div class="generator-section">
+    <h2 class="section-title">🎭 Generate Your Excuse</h2>
+    
+    <!-- Generation Options -->
+    <div class="generator-options">
+      <div class="option-tabs">
+        <button 
+          class="tab-button" 
+          [class.active]="generatorMode() === 'random'"
+          (click)="setGeneratorMode('random')"
+        >
+          🎲 Random Excuse
+        </button>
+        <button 
+          class="tab-button" 
+          [class.active]="generatorMode() === 'ai'"
+          (click)="setGeneratorMode('ai')"
+        >
+          🤖 AI-Powered
+        </button>
+        <button 
+          class="tab-button" 
+          [class.active]="generatorMode() === 'personalized'"
+          (click)="setGeneratorMode('personalized')"
+        >
+          👤 Personalized
+        </button>
+      </div>
+
+      <!-- Filters Form -->
+      <form [formGroup]="filtersForm" class="filters-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="category">Meeting Category</label>
+            <select id="category" formControlName="category" class="form-control">
+              <option value="">Any Category</option>
+              <option *ngFor="let category of categories" [value]="category.value">
+                {{ category.label }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="type">Excuse Type</label>
+            <select id="type" formControlName="type" class="form-control">
+              <option value="">Any Type</option>
+              <option *ngFor="let type of excuseTypes" [value]="type.value">
+                {{ type.label }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="believability">Min Believability</label>
+            <select id="believability" formControlName="minBelievability" class="form-control">
+              <option value="">Any</option>
+              <option *ngFor="let score of believabilityScores" [value]="score">
+                {{ score }}/10
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" formControlName="excludeUsed">
+              <span class="checkmark"></span>
+              Exclude previously used excuses
+            </label>
+          </div>
+        </div>
+      </form>
+
+      <!-- Generate Button -->
+      <div class="generate-actions">
+        <button 
+          class="generate-btn primary"
+          (click)="generateExcuse()"
+          [disabled]="meetingExcuseService.isLoading()"
+        >
+          <span class="btn-icon">✨</span>
+          Generate {{ getGeneratorModeLabel() }} Excuse
+        </button>
+        
+        <button 
+          class="generate-btn secondary"
+          (click)="generateBulkExcuses()"
+          [disabled]="meetingExcuseService.isLoading()"
+        >
+          <span class="btn-icon">📦</span>
+          Generate 3 Excuses
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Current Excuse Display -->
+  <div *ngIf="currentExcuse() as excuse" class="current-excuse-section">
+    <h2 class="section-title">🎯 Your Generated Excuse</h2>
+    <div class="excuse-card current">
+      <div class="excuse-content">
+        <p class="excuse-text">"{{ excuse.excuseText }}"</p>
+        <div class="excuse-meta">
+          <span class="category">{{ getCategoryDisplay(excuse.category) }}</span>
+          <span class="type">{{ getTypeDisplay(excuse.type) }}</span>
+          <span class="believability">{{ excuse.believabilityScore }}/10 believable</span>
+          <div class="tags" *ngIf="excuse.tags && excuse.tags.length > 0">
+            <span *ngFor="let tag of excuse.tags" class="tag">{{ tag }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Excuse Actions -->
+      <div class="excuse-actions">
+        <button class="action-btn favorite" (click)="toggleFavorite(excuse)">
+          <span class="icon">{{ excuse.isFavorite ? '❤️' : '🤍' }}</span>
+          {{ excuse.isFavorite ? 'Favorited' : 'Add to Favorites' }}
+        </button>
+        
+        <button class="action-btn copy" (click)="copyToClipboard(excuse.excuseText)">
+          <span class="icon">📋</span>
+          Copy Text
+        </button>
+        
+        <button class="action-btn usage" (click)="showUsageModal(excuse)">
+          <span class="icon">📝</span>
+          Mark as Used
+        </button>
+        
+        <div class="rating-section">
+          <span class="rating-label">Rate this excuse:</span>
+          <div class="star-rating">
+            <button 
+              *ngFor="let star of [1,2,3,4,5]" 
+              class="star-btn"
+              [class.filled]="star <= currentRating()"
+              (click)="rateExcuse(excuse, star)"
+            >
+              ⭐
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk Excuses Display -->
+  <div *ngIf="bulkExcuses().length > 0" class="bulk-excuses-section">
+    <h2 class="section-title">📦 Your Generated Excuses</h2>
+    <div class="excuses-grid">
+      <div *ngFor="let excuse of bulkExcuses(); let i = index" class="excuse-card mini">
+        <div class="excuse-content">
+          <p class="excuse-text">"{{ excuse.excuseText }}"</p>
+          <div class="excuse-meta">
+            <span class="category">{{ getCategoryDisplay(excuse.category) }}</span>
+            <span class="believability">{{ excuse.believabilityScore }}/10</span>
+          </div>
+        </div>
+        <div class="excuse-actions">
+          <button class="action-btn small" (click)="selectExcuse(excuse)">
+            <span class="icon">👆</span>
+            Select
+          </button>
+          <button class="action-btn small" (click)="copyToClipboard(excuse.excuseText)">
+            <span class="icon">📋</span>
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Stats and Leaderboard -->
+  <div *ngIf="dashboard() as dashboardData" class="bottom-section">
+    <div class="section-grid">
+      <!-- Trending Excuses -->
+      <div class="info-section">
+        <h3 class="info-title">🔥 Trending Excuses</h3>
+        <div class="trending-list">
+          <div *ngFor="let excuse of dashboardData.trendingExcuses?.slice(0, 3)" class="trending-item">
+            <p class="trending-text">"{{ excuse.excuseText }}"</p>
+            <span class="trending-usage">Used {{ excuse.usageCount }} times</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="info-section">
+        <h3 class="info-title">🏆 Top Users This Week</h3>
+        <div class="leaderboard-list">
+          <div *ngFor="let entry of dashboardData.topUsersThisWeek?.slice(0, 5); let i = index" class="leaderboard-item">
+            <span class="position">{{ entry.position }}</span>
+            <span class="username">{{ entry.username }}</span>
+            <span class="score">{{ entry.totalExcusesGenerated }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Usage Modal -->
+  <div *ngIf="showUsageModalFlag()" class="modal-overlay" (click)="closeUsageModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>Mark Excuse as Used</h3>
+      <form [formGroup]="usageForm" (ngSubmit)="submitUsage()">
+        <div class="form-group">
+          <label for="context">Context (Optional)</label>
+          <textarea 
+            id="context" 
+            formControlName="context" 
+            class="form-control"
+            placeholder="Where did you use this excuse? How did it go?"
+            rows="3"
+          ></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" formControlName="wasSuccessful">
+            <span class="checkmark"></span>
+            It worked! 🎉
+          </label>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn secondary" (click)="closeUsageModal()">
+            Cancel
+          </button>
+          <button type="submit" class="btn primary">
+            Submit Feedback
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage()" class="error-message">
+    <p>{{ errorMessage() }}</p>
+    <button (click)="clearError()" class="error-close">×</button>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage()" class="success-message">
+    <p>{{ successMessage() }}</p>
+    <button (click)="clearSuccess()" class="success-close">×</button>
+  </div>
+</div>

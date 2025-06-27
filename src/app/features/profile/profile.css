@@ -1,0 +1,312 @@
+    .profile-container {
+      min-height: calc(100vh - 4rem);
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+      padding: 2rem;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .profile-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 3rem;
+    }
+
+    /* Welcome Section */
+    .welcome-section {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+
+    .welcome-card {
+      background: rgba(30, 30, 46, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 2.5rem;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+      max-width: 800px;
+      width: 100%;
+    }
+
+    .welcome-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent);
+    }
+
+    .zodiac-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .welcome-message {
+      color: #e4e4e7;
+      font-size: 1.5rem;
+      font-weight: 600;
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    /* Profile Info Section */
+    .profile-info-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .section-title {
+      color: #e4e4e7;
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin: 0;
+      text-align: center;
+      background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .profile-info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .info-card {
+      background: rgba(30, 30, 46, 0.8);
+      backdrop-filter: blur(20px);
+      border-radius: 16px;
+      padding: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      transition: all 0.2s ease;
+    }
+
+    .info-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(139, 92, 246, 0.3);
+    }
+
+    .info-icon {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .info-icon.name {
+      background: rgba(139, 92, 246, 0.1);
+      color: #8b5cf6;
+    }
+
+    .info-icon.username {
+      background: rgba(6, 182, 212, 0.1);
+      color: #06b6d4;
+    }
+
+    .info-icon.birthdate {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+    }
+
+    .info-icon.zodiac {
+      background: rgba(245, 158, 11, 0.1);
+      color: #f59e0b;
+    }
+
+    .info-icon.tech {
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+    }
+
+    .info-icon.experience {
+      background: rgba(168, 85, 247, 0.1);
+      color: #a855f7;
+    }
+
+    .info-icon svg {
+      width: 1.5rem;
+      height: 1.5rem;
+    }
+
+    .info-content {
+      flex: 1;
+    }
+
+    .info-label {
+      color: #a1a1aa;
+      font-size: 0.875rem;
+      font-weight: 500;
+      margin: 0 0 0.25rem 0;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .info-value {
+      color: #e4e4e7;
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    /* Navigation Section */
+    .navigation-section {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .navigation-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .nav-button {
+      background: rgba(30, 30, 46, 0.6);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 2rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .nav-button:hover {
+      transform: translateY(-4px);
+      border-color: rgba(139, 92, 246, 0.4);
+      box-shadow: 0 20px 40px -10px rgba(139, 92, 246, 0.3);
+    }
+
+    .nav-button:hover::before {
+      left: 100%;
+    }
+
+    .nav-button.casino:hover {
+      border-color: rgba(245, 158, 11, 0.4);
+      box-shadow: 0 20px 40px -10px rgba(245, 158, 11, 0.3);
+    }
+
+    .nav-button.roast:hover {
+      border-color: rgba(239, 68, 68, 0.4);
+      box-shadow: 0 20px 40px -10px rgba(239, 68, 68, 0.3);
+    }
+
+    .nav-button.bug-chase:hover {
+      border-color: rgba(34, 197, 94, 0.4);
+      box-shadow: 0 20px 40px -10px rgba(34, 197, 94, 0.3);
+    }
+
+    .nav-button.code-analyzer:hover {
+      border-color: rgba(6, 182, 212, 0.4);
+      box-shadow: 0 20px 40px -10px rgba(6, 182, 212, 0.3);
+    }
+
+    .nav-button.dating:hover {
+      border-color: rgba(236, 72, 153, 0.4);
+      box-shadow: 0 20px 40px -10px rgba(236, 72, 153, 0.3);
+    }
+
+    .nav-button.escape:hover {
+      border-color: rgba(168, 85, 247, 0.4);
+      box-shadow: 0 20px 40px -10px rgba(168, 85, 247, 0.3);
+    }
+
+    .nav-icon {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .nav-title {
+      color: #e4e4e7;
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem 0;
+      letter-spacing: -0.025em;
+    }
+
+    .nav-description {
+      color: #a1a1aa;
+      font-size: 0.875rem;
+      margin: 0;
+      line-height: 1.4;
+    }
+
+    @media (max-width: 768px) {
+      .profile-container {
+        padding: 1rem;
+      }
+
+      .welcome-card {
+        padding: 2rem;
+      }
+
+      .zodiac-icon {
+        font-size: 3rem;
+      }
+
+      .welcome-message {
+        font-size: 1.25rem;
+      }
+
+      .profile-info-grid,
+      .navigation-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .nav-button {
+        padding: 1.5rem;
+      }
+
+      .nav-icon {
+        font-size: 2.5rem;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .welcome-card {
+        padding: 1.5rem;
+      }
+
+      .welcome-message {
+        font-size: 1.125rem;
+      }
+
+      .section-title {
+        font-size: 1.5rem;
+      }
+    }

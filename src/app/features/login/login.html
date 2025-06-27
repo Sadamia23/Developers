@@ -1,0 +1,89 @@
+ <div class="login-container">
+      <div class="login-card">
+        <div class="header">
+          <h1 class="title">Welcome Back</h1>
+          <p class="subtitle">Sign in to your DevLife account</p>
+        </div>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="form">
+          <div class="form-group">
+            <label for="username" class="label">Username</label>
+            <input
+              id="username"
+              type="text"
+              formControlName="username"
+              class="input"
+              [class.error]="isFieldInvalid('username')"
+              placeholder="Enter your username"
+              autocomplete="username"
+            />
+            <div class="error-message" *ngIf="isFieldInvalid('username')">
+              <span *ngIf="loginForm.get('username')?.errors?.['required']">
+                Username is required
+              </span>
+              <span *ngIf="loginForm.get('username')?.errors?.['maxlength']">
+                Username must be less than 50 characters
+              </span>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="submit-button"
+            [disabled]="loginForm.invalid || isLoading()"
+          >
+            <span *ngIf="!isLoading()" class="button-text">
+              <svg class="button-icon" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M3 3a1 1 0 011 1v12a1 1 0 11-2 0V4a1 1 0 011-1zm7.707 3.293a1 1 0 010 1.414L9.414 9H17a1 1 0 110 2H9.414l1.293 1.293a1 1 0 01-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+              Sign In
+            </span>
+            <span *ngIf="isLoading()" class="button-loading">
+              <div class="spinner"></div>
+              Signing In...
+            </span>
+          </button>
+
+          <!-- Error Message -->
+          <div *ngIf="errorMessage()" class="form-error">
+            {{ errorMessage() }}
+          </div>
+
+          <!-- Registration Link -->
+          <div class="form-footer">
+            <p class="footer-text">
+              Don't have an account?
+              <a href="/register" class="footer-link">Create one here</a>
+            </p>
+          </div>
+        </form>
+
+        <!-- Features List -->
+        <div class="features">
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <span>No password required</span>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <span>Quick and secure access</span>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+              </svg>
+            </div>
+            <span>Developer-friendly platform</span>
+          </div>
+        </div>
+      </div>
+    </div>

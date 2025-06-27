@@ -1,0 +1,162 @@
+<div class="registration-container">
+      <div class="registration-card">
+        <div class="header">
+          <h1 class="title">Join DevLife</h1>
+          <p class="subtitle">Create your developer profile</p>
+        </div>
+
+        <form [formGroup]="registrationForm" (ngSubmit)="onSubmit()" class="form">
+          <!-- Personal Information -->
+          <div class="form-section">
+            <h3 class="section-title">Personal Information</h3>
+            
+            <div class="form-group">
+              <label for="username" class="label">Username</label>
+              <input
+                id="username"
+                type="text"
+                formControlName="username"
+                class="input"
+                [class.error]="isFieldInvalid('username')"
+                placeholder="Enter your username"
+              />
+              <div class="error-message" *ngIf="isFieldInvalid('username')">
+                <span *ngIf="registrationForm.get('username')?.errors?.['required']">
+                  Username is required
+                </span>
+                <span *ngIf="registrationForm.get('username')?.errors?.['maxlength']">
+                  Username must be less than 50 characters
+                </span>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="firstName" class="label">First Name</label>
+                <input
+                  id="firstName"
+                  type="text"
+                  formControlName="firstName"
+                  class="input"
+                  [class.error]="isFieldInvalid('firstName')"
+                  placeholder="First name"
+                />
+                <div class="error-message" *ngIf="isFieldInvalid('firstName')">
+                  First name is required
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="lastName" class="label">Last Name</label>
+                <input
+                  id="lastName"
+                  type="text"
+                  formControlName="lastName"
+                  class="input"
+                  [class.error]="isFieldInvalid('lastName')"
+                  placeholder="Last name"
+                />
+                <div class="error-message" *ngIf="isFieldInvalid('lastName')">
+                  Last name is required
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="dateOfBirth" class="label">Date of Birth</label>
+              <input
+                id="dateOfBirth"
+                type="date"
+                formControlName="dateOfBirth"
+                class="input"
+                [class.error]="isFieldInvalid('dateOfBirth')"
+              />
+              <div class="error-message" *ngIf="isFieldInvalid('dateOfBirth')">
+                <span *ngIf="registrationForm.get('dateOfBirth')?.errors?.['required']">
+                  Date of birth is required
+                </span>
+                <span *ngIf="registrationForm.get('dateOfBirth')?.errors?.['ageValidator']">
+                  You must be at least 16 years old
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Professional Information -->
+          <div class="form-section">
+            <h3 class="section-title">Professional Information</h3>
+            
+            <div class="form-group">
+              <label for="techStack" class="label">Technology Stack</label>
+              <select
+                id="techStack"
+                formControlName="techStack"
+                class="select"
+                [class.error]="isFieldInvalid('techStack')"
+              >
+                <option value="">Select your primary tech stack</option>
+                <option *ngFor="let tech of techStacks" [value]="tech.value">
+                  {{ tech.label }}
+                </option>
+              </select>
+              <div class="error-message" *ngIf="isFieldInvalid('techStack')">
+                Technology stack is required
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="experience" class="label">Experience Level</label>
+              <div class="radio-group">
+                <div *ngFor="let exp of experienceLevels" class="radio-item">
+                  <input
+                    type="radio"
+                    [id]="'exp-' + exp.value"
+                    [value]="exp.value"
+                    formControlName="experience"
+                    class="radio-input"
+                  />
+                  <label [for]="'exp-' + exp.value" class="radio-label">
+                    <span class="radio-custom"></span>
+                    <span class="radio-text">
+                      <span class="radio-title">{{ exp.label }}</span>
+                      <span class="radio-description">{{ exp.description }}</span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+              <div class="error-message" *ngIf="isFieldInvalid('experience')">
+                Experience level is required
+              </div>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            class="submit-button"
+            [disabled]="registrationForm.invalid || isLoading()"
+          >
+            <span *ngIf="!isLoading()" class="button-text">
+              Create Account
+            </span>
+            <span *ngIf="isLoading()" class="button-loading">
+              <div class="spinner"></div>
+              Creating Account...
+            </span>
+          </button>
+
+          <!-- Error Message -->
+          <div *ngIf="errorMessage()" class="form-error">
+            {{ errorMessage() }}
+          </div>
+
+          <!-- Login Link -->
+          <div class="form-footer">
+            <p class="footer-text">
+              Already have an account?
+              <a href="/login" class="footer-link">Sign in here</a>
+            </p>
+          </div>
+        </form>
+      </div>
+    </div>

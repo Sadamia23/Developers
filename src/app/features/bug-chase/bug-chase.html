@@ -1,0 +1,456 @@
+<!-- features/bug-chase/bug-chase.component.html -->
+<app-navbar></app-navbar>
+
+<div class="bug-chase-container">
+  <div class="bug-chase-content">
+    <!-- Header -->
+    <div class="bug-chase-header">
+      <h1 class="bug-chase-title">🏃 Bug Chase Game</h1>
+      <p class="bug-chase-subtitle">Run, jump, duck, and collect power-ups to survive!</p>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-message" *ngIf="errorMessage()" (click)="errorMessage.set(null)">
+      <span>❌ {{ errorMessage() }}</span>
+      <button class="close-error">×</button>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" *ngIf="isLoading()">
+      <div class="spinner"></div>
+      <p>Loading...</p>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+      <button 
+        class="tab-button"
+        [class.active]="activeTab() === 'game'"
+        (click)="setActiveTab('game')"
+      >
+        🎮 Play Game
+      </button>
+      <button 
+        class="tab-button"
+        [class.active]="activeTab() === 'stats'"
+        (click)="setActiveTab('stats')"
+      >
+        📊 Your Stats
+      </button>
+      <button 
+        class="tab-button"
+        [class.active]="activeTab() === 'leaderboard'"
+        (click)="setActiveTab('leaderboard')"
+      >
+        🏆 Leaderboard
+      </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      
+      <!-- Game Tab -->
+      <div class="tab-pane" *ngIf="activeTab() === 'game'">
+        <div class="game-section">
+          
+          <!-- Game Canvas -->
+          <div class="game-canvas-container">
+            <canvas #gameCanvas class="game-canvas"></canvas>
+            
+            <!-- Game Overlay -->
+            <div class="game-overlay" *ngIf="!gameState().isPlaying && !gameState().isGameOver">
+              <div class="start-screen">
+                <h3>🏃 Ready to Run?</h3>
+                <p>Avoid bugs, deadlines, and meetings!</p>
+                <p>Collect coffee for speed and weekends for invincibility!</p>
+                <button class="start-game-btn" (click)="startGame()">
+                  Start Game
+                </button>
+              </div>
+            </div>
+            
+            <!-- Game Over Overlay -->
+            <div class="game-overlay game-over" *ngIf="gameState().isGameOver">
+              <div class="game-over-screen">
+                <h3>Game Over! 💥</h3>
+                <div class="final-stats">
+                  <div class="stat">
+                    <span class="label">Final Score:</span>
+                    <span class="value">{{ gameState().score }}</span>
+                  </div>
+                  <div class="stat">
+                    <span class="label">Distance:</span>
+                    <span class="value">{{ gameState().distance }}m</span>
+                  </div>
+                </div>
+                <div class="game-over-actions">
+                  <button class="play-again-btn" (click)="resetGame()">
+                    🔄 Play Again
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Pause Overlay -->
+            <div class="game-overlay pause-overlay" *ngIf="gameState().isPaused">
+              <div class="pause-screen">
+                <h3>⏸️ Paused</h3>
+                <p>Press P to resume</p>
+                <button class="resume-btn" (click)="togglePause()">
+                  ▶️ Resume
+                </button>
+              </div>
+            </div>
+          </div>
+
+
+
+          <!-- Live Game Stats -->
+          <div class="live-stats" *ngIf="gameState().isPlaying">
+            <h4>📈 Current Run</h4>
+            <div class="live-stats-grid">
+              <div class="live-stat">
+                <span class="stat-icon">🐛</span>
+                <span class="stat-label">Bugs Avoided</span>
+                <span class="stat-value">{{ gameStats().bugsAvoided }}</span>
+              </div>
+              <div class="live-stat">
+                <span class="stat-icon">⏰</span>
+                <span class="stat-label">Deadlines Avoided</span>
+                <span class="stat-value">{{ gameStats().deadlinesAvoided }}</span>
+              </div>
+              <div class="live-stat">
+                <span class="stat-icon">📅</span>
+                <span class="stat-label">Meetings Avoided</span>
+                <span class="stat-value">{{ gameStats().meetingsAvoided }}</span>
+              </div>
+              <div class="live-stat">
+                <span class="stat-icon">☕</span>
+                <span class="stat-label">Coffee Collected</span>
+                <span class="stat-value">{{ gameStats().coffeeCollected }}</span>
+              </div>
+              <div class="live-stat">
+                <span class="stat-icon">🏖️</span>
+                <span class="stat-label">Weekends Collected</span>
+                <span class="stat-value">{{ gameStats().weekendsCollected }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Game Controls -->
+          <div class="game-controls">
+            <h4>🎮 Advanced Controls</h4>
+            <div class="controls-grid">
+              <div class="control-item">
+                <kbd>SPACE</kbd> or <kbd>↑</kbd>
+                <span>Jump over HIGH obstacles</span>
+              </div>
+              <div class="control-item">
+                <kbd>↓</kbd>
+                <span>Duck under MIDDLE obstacles</span>
+              </div>
+              <div class="control-item">
+                <kbd>P</kbd>
+                <span>Pause game</span>
+              </div>
+              <div class="control-item">
+                <kbd>R</kbd>
+                <span>Restart (when game over)</span>
+              </div>
+            </div>
+            
+            <div class="strategy-tips">
+              <h5>💡 Pro Tips:</h5>
+              <ul>
+                <li><strong>Watch obstacle height:</strong> High = Jump, Middle = Duck, Ground = Run</li>
+                <li><strong>React quickly:</strong> Ducking is now more effective and responsive</li>
+                <li><strong>Chain movements:</strong> You can jump and immediately duck for quick transitions</li>
+                <li><strong>Use emojis as guides:</strong> 🏃‍♂️ running, 🦘 jumping, 🤸‍♂️ ducking</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Game Legend - Updated to reflect new obstacle mechanics -->
+          <div class="game-legend">
+            <h4>🎯 Game Elements & Strategy</h4>
+            <div class="legend-grid">
+              <div class="legend-section">
+                <h5>Obstacles (Read the Height!)</h5>
+                <div class="legend-items">
+                  <div class="legend-item danger">
+                    <span class="legend-icon">🐛</span>
+                    <span class="legend-name">Bug</span>
+                    <span class="legend-desc">Ground/Middle/High levels</span>
+                  </div>
+                  <div class="legend-item danger">
+                    <span class="legend-icon">⏰</span>
+                    <span class="legend-name">Deadline</span>
+                    <span class="legend-desc">Ground/Middle/High levels</span>
+                  </div>
+                  <div class="legend-item danger">
+                    <span class="legend-icon">📅</span>
+                    <span class="legend-name">Meeting</span>
+                    <span class="legend-desc">Ground/Middle/High levels</span>
+                  </div>
+                </div>
+              </div>
+              <div class="legend-section">
+                <h5>Height Strategy</h5>
+                <div class="legend-items">
+                  <div class="legend-item height-guide">
+                    <span class="legend-icon">⬆️</span>
+                    <span class="legend-name">HIGH</span>
+                    <span class="legend-desc">JUMP to clear (↑/SPACE)</span>
+                  </div>
+                  <div class="legend-item height-guide">
+                    <span class="legend-icon">⬇️</span>
+                    <span class="legend-name">MIDDLE</span>
+                    <span class="legend-desc">DUCK to avoid (↓)</span>
+                  </div>
+                  <div class="legend-item height-guide">
+                    <span class="legend-icon">➡️</span>
+                    <span class="legend-name">GROUND</span>
+                    <span class="legend-desc">Just keep running!</span>
+                  </div>
+                </div>
+              </div>
+              <div class="legend-section">
+                <h5>Power-ups (Collect!)</h5>
+                <div class="legend-items">
+                  <div class="legend-item powerup">
+                    <span class="legend-icon">☕</span>
+                    <span class="legend-name">Coffee</span>
+                    <span class="legend-desc">Speed boost for 5s!</span>
+                  </div>
+                  <div class="legend-item powerup">
+                    <span class="legend-icon">🏖️</span>
+                    <span class="legend-name">Weekend</span>
+                    <span class="legend-desc">Invincibility for 3s!</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Tab -->
+      <div class="tab-pane" *ngIf="activeTab() === 'stats'">
+        <div class="stats-section" *ngIf="dashboard()?.userStats as stats">
+          <h2>📊 Your Bug Chase Statistics</h2>
+          
+          <div class="stats-grid">
+            <div class="stat-card highlight">
+              <div class="stat-icon">🏆</div>
+              <div class="stat-info">
+                <h3>Best Score</h3>
+                <p class="stat-number">{{ stats.bestScore }}</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">🎮</div>
+              <div class="stat-info">
+                <h3>Games Played</h3>
+                <p class="stat-number">{{ stats.totalGamesPlayed }}</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">🏃</div>
+              <div class="stat-info">
+                <h3>Total Distance</h3>
+                <p class="stat-number">{{ stats.totalDistance }}m</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">⏱️</div>
+              <div class="stat-info">
+                <h3>Survival Time</h3>
+                <p class="stat-number">{{ bugChaseService.parseTimeSpanToDisplay(stats.totalSurvivalTime) }}</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">🐛</div>
+              <div class="stat-info">
+                <h3>Bugs Avoided</h3>
+                <p class="stat-number">{{ stats.totalBugsAvoided }}</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">⏰</div>
+              <div class="stat-info">
+                <h3>Deadlines Avoided</h3>
+                <p class="stat-number">{{ stats.totalDeadlinesAvoided }}</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">📅</div>
+              <div class="stat-info">
+                <h3>Meetings Avoided</h3>
+                <p class="stat-number">{{ stats.totalMeetingsAvoided }}</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">☕</div>
+              <div class="stat-info">
+                <h3>Coffee Collected</h3>
+                <p class="stat-number">{{ stats.totalCoffeeCollected }}</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">🏖️</div>
+              <div class="stat-info">
+                <h3>Weekends Collected</h3>
+                <p class="stat-number">{{ stats.totalWeekendsCollected }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Games -->
+          <div class="recent-games" *ngIf="dashboard()?.recentGames as recentGames">
+            <h3>🕐 Recent Games</h3>
+            <div class="recent-games-list" *ngIf="recentGames.length > 0; else noRecentGames">
+              <div class="recent-game" *ngFor="let game of recentGames">
+                <div class="game-info">
+                  <div class="game-score" [class.best-score]="game.isNewBestScore">
+                    <span class="score">{{ game.score }}</span>
+                    <span class="best-badge" *ngIf="game.isNewBestScore">🏆 Best!</span>
+                  </div>
+                  <div class="game-details">
+                    <span class="distance">{{ game.distance }}m</span>
+                    <span class="time">{{  bugChaseService.parseTimeSpanToDisplay(game.survivalTime) }}</span>
+                  </div>
+                </div>
+                <div class="game-stats">
+                  <span class="mini-stat">🐛{{ game.bugsAvoided }}</span>
+                  <span class="mini-stat">⏰{{ game.deadlinesAvoided }}</span>
+                  <span class="mini-stat">📅{{ game.meetingsAvoided }}</span>
+                  <span class="mini-stat">☕{{ game.coffeeCollected }}</span>
+                  <span class="mini-stat">🏖️{{ game.weekendsCollected }}</span>
+                </div>
+                <div class="game-date">
+                  {{ formatDate(game.playedAt) }}
+                </div>
+              </div>
+            </div>
+            <ng-template #noRecentGames>
+              <p class="no-data">No games played yet. Start playing to see your recent games!</p>
+            </ng-template>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leaderboard Tab -->
+      <div class="tab-pane" *ngIf="activeTab() === 'leaderboard'">
+        <div class="leaderboard-section">
+          <h2>🏆 Top Players</h2>
+          
+          <div class="leaderboard-list" *ngIf="dashboard()?.topScores as topScores">
+            <div class="leaderboard-item" *ngFor="let player of topScores">
+              <div class="rank">{{ getRankEmoji(player.rank) }}</div>
+              <div class="player-info">
+                <h4>{{ player.firstName }} {{ player.lastName }}</h4>
+                <p>&#64;{{ player.username }}</p>
+                <div class="player-meta">
+                  <span>{{ getTechnologyStackName(player.techStack) }}</span>
+                  <span>{{ getZodiacEmoji(player.zodiacSign) }}</span>
+                </div>
+              </div>
+              <div class="player-stats">
+                <div class="score">{{ player.score }} pts</div>
+                <div class="distance">{{ player.distance }}m</div>
+                <div class="time">{{ bugChaseService.parseTimeSpanToDisplay(player.survivalTime) }}</div>
+                <div class="date">{{ formatDate(player.playedAt) }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="no-leaderboard" *ngIf="!dashboard()?.topScores?.length">
+            <p>No scores yet. Be the first to play!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Result Modal -->
+    <div class="result-modal" *ngIf="showResult() && gameResult() as result" (click)="showResult.set(false)">
+      <div class="result-content" (click)="$event.stopPropagation()">
+        <div class="result-header">
+          <h3>🎉 Game Complete!</h3>
+          <button class="close-modal" (click)="showResult.set(false)">×</button>
+        </div>
+        
+        <div class="result-score" [class.new-best]="result.isNewBestScore">
+          <div class="score-display">
+            <span class="score-number">{{ result.score }}</span>
+            <span class="score-label">Final Score</span>
+          </div>
+          <div class="best-indicator" *ngIf="result.isNewBestScore">
+            🏆 New Personal Best!
+          </div>
+          <div class="rank-indicator">
+            Global Rank: {{ getRankEmoji(result.rank) }}
+          </div>
+        </div>
+
+        <div class="result-details">
+          <div class="result-stat">
+            <span class="stat-label">Distance Run:</span>
+            <span class="stat-value">{{ result.distance }}m</span>
+          </div>
+          <div class="result-stat">
+            <span class="stat-label">Survival Time:</span>
+            <span class="stat-value">{{ bugChaseService.parseTimeSpanToDisplay(result.survivalTime) }}</span>
+          </div>
+        </div>
+
+        <div class="result-breakdown">
+          <h4>Performance Breakdown</h4>
+          <div class="breakdown-grid">
+            <div class="breakdown-item">
+              <span class="breakdown-icon">🐛</span>
+              <span class="breakdown-label">Bugs Avoided</span>
+              <span class="breakdown-value">{{ result.bugsAvoided }}</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-icon">⏰</span>
+              <span class="breakdown-label">Deadlines Avoided</span>
+              <span class="breakdown-value">{{ result.deadlinesAvoided }}</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-icon">📅</span>
+              <span class="breakdown-label">Meetings Avoided</span>
+              <span class="breakdown-value">{{ result.meetingsAvoided }}</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-icon">☕</span>
+              <span class="breakdown-label">Coffee Collected</span>
+              <span class="breakdown-value">{{ result.coffeeCollected }}</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-icon">🏖️</span>
+              <span class="breakdown-label">Weekends Collected</span>
+              <span class="breakdown-value">{{ result.weekendsCollected }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="result-actions">
+          <button class="play-again-btn" (click)="resetGame(); showResult.set(false)">
+            🔄 Play Again
+          </button>
+          <button class="view-stats-btn" (click)="setActiveTab('stats'); showResult.set(false)">
+            📊 View Stats
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,675 @@
+<!-- features/code-roast/code-roast.component.html -->
+<app-navbar></app-navbar>
+
+<div class="roast-container">
+  <div class="roast-content">
+    <!-- Header -->
+    <div class="roast-header">
+  <h1 class="roast-title">🔥 Code Roast</h1>
+  <p class="roast-subtitle">Submit your code and get roasted by AI!</p>
+  
+  <!-- User Stats Summary -->
+  @if (dashboard()?.userStats; as stats) {
+    <div class="stats-summary">
+      <div class="stat-item">
+        <span class="stat-label">Submissions:</span>
+        <span class="stat-value">{{ stats.totalSubmissions }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Avg Score:</span>
+        <span class="stat-value">{{ stats.averageScore.toFixed(1) }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Streak:</span>
+        <span class="stat-value">🔥 {{ stats.currentStreak }}</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-label">Roasts:</span>
+        <span class="stat-value">💀 {{ stats.totalRoasts }}</span>
+      </div>
+    </div>
+  }
+</div>
+
+    <!-- Error Message -->
+    @if (errorMessage()) {
+      <div class="error-message" (click)="clearError()">
+        <span>❌ {{ errorMessage() }}</span>
+        <button class="close-error">×</button>
+      </div>
+    }
+
+    <!-- Loading Spinner -->
+    @if (isLoading()) {
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+      </div>
+    }
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+      <button 
+        class="tab-button"
+        [class.active]="activeTab() === 'dashboard'"
+        (click)="setActiveTab('dashboard')"
+      >
+        🏠 Dashboard
+      </button>
+      <button 
+        class="tab-button"
+        [class.active]="activeTab() === 'challenge'"
+        (click)="setActiveTab('challenge')"
+      >
+        💻 Challenge
+      </button>
+      <button 
+        class="tab-button"
+        [class.active]="activeTab() === 'results'"
+        (click)="setActiveTab('results')"
+        [disabled]="!submissionResult()"
+      >
+        📊 Results
+      </button>
+      <button 
+        class="tab-button"
+        [class.active]="activeTab() === 'history'"
+        (click)="setActiveTab('history')"
+      >
+        📚 History
+      </button>
+      <button 
+        class="tab-button"
+        [class.active]="activeTab() === 'hall-of-fame'"
+        (click)="setActiveTab('hall-of-fame')"
+      >
+        🏆 Hall of Fame
+      </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      
+      <!-- Dashboard Tab -->
+      @if (activeTab() === 'dashboard' && dashboard(); as dash) {
+        <div class="tab-pane">
+          <div class="dashboard-section">
+            <div class="dashboard-grid">
+              
+              <!-- User Stats Card -->
+              <div class="dashboard-card stats-card">
+                <h3>📊 Your Statistics</h3>
+                <div class="quick-stats">
+                  <div class="quick-stat">
+                    <span class="stat-number">{{ dash.userStats.totalSubmissions }}</span>
+                    <span class="stat-label">Total Submissions</span>
+                  </div>
+                  <div class="quick-stat">
+                    <span class="stat-number">{{ dash.userStats.averageScore.toFixed(1) }}</span>
+                    <span class="stat-label">Average Score</span>
+                  </div>
+                  <div class="quick-stat">
+                    <span class="stat-number">{{ dash.userStats.perfectScores }}</span>
+                    <span class="stat-label">Perfect Scores</span>
+                  </div>
+                  <div class="quick-stat">
+                    <span class="stat-number">{{ dash.userStats.longestStreak }}</span>
+                    <span class="stat-label">Best Streak</span>
+                  </div>
+                </div>
+                
+                <!-- Achievements -->
+                @if (dash.userStats.unlockedAchievements.length > 0) {
+                  <div class="achievements">
+                    <h4>🏆 Recent Achievements</h4>
+                    <div class="achievement-list">
+                      @for (achievement of dash.userStats.unlockedAchievements.slice(-3); track achievement) {
+                        <span 
+                          class="achievement-tag"
+                          [title]="achievement"
+                        >
+                          {{ getAchievementEmoji(achievement) }} {{ achievement }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <!-- Recent Roasts Card -->
+              <div class="dashboard-card recent-roasts-card">
+                <h3>🔥 Recent Roasts</h3>
+                @if (dash.recentRoasts.length > 0) {
+                  <div class="recent-roasts">
+                    @for (roast of dash.recentRoasts.slice(0, 3); track roast.id) {
+                      <div 
+                        class="recent-roast-item"
+                        [class.roasted]="roast.isRoasted"
+                        [class.praised]="roast.isPraised"
+                      >
+                        <div class="roast-header">
+                          <h5>{{ roast.taskTitle }}</h5>
+                          <span class="roast-score" [style.color]="getScoreColor(roast.overallScore)">
+                            {{ roast.overallScore }}/100
+                          </span>
+                        </div>
+                        <p class="roast-message">{{ roast.roastMessage }}</p>
+                        <div class="roast-meta">
+                          <span class="roast-severity">
+                            {{ getRoastSeverityEmoji(roast.roastSeverity) }} {{ getRoastSeverityName(roast.roastSeverity) }}
+                          </span>
+                          <span class="roast-date">{{ formatDate(roast.submittedAt) }}</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <p class="no-data">No recent roasts. Start coding to get roasted! 🔥</p>
+                }
+              </div>
+
+              <!-- Recommended Tasks Card -->
+              <div class="dashboard-card recommended-tasks-card">
+                <h3>💡 Recommended Tasks</h3>
+                @if (dash.recommendedTasks.length > 0) {
+                  <div class="recommended-tasks">
+                    @for (task of dash.recommendedTasks; track task.id) {
+                      <div 
+                        class="recommended-task-item"
+                        (click)="currentTask.set(task); setActiveTab('challenge')"
+                      >
+                        <h5>{{ task.title }}</h5>
+                        <p>{{ task.description }}</p>
+                        <div class="task-meta">
+                          <span class="task-difficulty">{{ getExperienceLevelName(task.difficultyLevel) }}</span>
+                          <span class="task-time">⏱️ {{ task.estimatedMinutes }}min</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <p class="no-data">No recommended tasks available.</p>
+                }
+              </div>
+
+              <!-- Hall of Fame Preview -->
+              <div class="dashboard-card hall-of-fame-preview">
+                <h3>🏆 Hall of Fame</h3>
+                @if (dash.hallOfFame.bestScores.length > 0) {
+                  <div class="hall-preview">
+                    <div class="hall-category">
+                      <h5>🥇 Best Scores</h5>
+                      @for (entry of dash.hallOfFame.bestScores.slice(0, 2); track entry.username) {
+                        <div class="hall-entry-mini">
+                          <span class="hall-user">{{ entry.firstName }} {{ entry.lastName.charAt(0) }}.</span>
+                          <span class="hall-score">{{ entry.score }}/100</span>
+                        </div>
+                      }
+                    </div>
+                    <div class="hall-category">
+                      <h5>💀 Brutal Roasts</h5>
+                      @for (entry of dash.hallOfFame.funniestRoasts.slice(0, 2); track entry.username) {
+                        <div class="hall-entry-mini">
+                          <span class="hall-user">{{ entry.firstName }} {{ entry.lastName.charAt(0) }}.</span>
+                          <span class="hall-severity">{{ getRoastSeverityEmoji(entry.roastSeverity) }}</span>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+                <button class="view-all-btn" (click)="setActiveTab('hall-of-fame')">
+                  View All →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Challenge Tab -->
+      @if (activeTab() === 'challenge') {
+        <div class="tab-pane">
+          <div class="challenge-section">
+            
+            <!-- Challenge Header -->
+            <div class="challenge-header">
+              <h2>💻 Coding Challenge</h2>
+              <div class="challenge-controls">
+                <select 
+                  [value]="selectedDifficulty()"
+                  (change)="setDifficulty(+$any($event.target).value)"
+                  class="difficulty-select"
+                >
+                  <option [value]="0">Junior</option>
+                  <option [value]="1">Middle</option>
+                  <option [value]="2">Senior</option>
+                </select>
+                <button class="new-task-btn" (click)="loadNewTask()" [disabled]="isLoading()">
+                  🔄 New Task
+                </button>
+              </div>
+            </div>
+
+            <!-- Current Task -->
+            @if (currentTask(); as task) {
+              <div class="task-content">
+                <div class="task-info">
+                  <h3>{{ task.title }}</h3>
+                  <p class="task-description">{{ task.description }}</p>
+                  
+                  <div class="task-meta">
+                    <span class="task-tech">{{ getTechnologyStackName(task.techStack) }}</span>
+                    <span class="task-difficulty">{{ getExperienceLevelName(task.difficultyLevel) }}</span>
+                    <span class="task-time">⏱️ {{ task.estimatedMinutes }}min</span>
+                  </div>
+
+                  <div class="task-requirements">
+                    <h4>📋 Requirements</h4>
+                    <p>{{ task.requirements }}</p>
+                  </div>
+
+                  <!-- Test Cases -->
+                  @if (task.testCases.length > 0) {
+                    <div class="task-examples">
+                      <h4>🧪 Test Cases</h4>
+                      <div class="test-cases">
+                        @for (testCase of task.testCases; track $index) {
+                          <div class="test-case">
+                            <pre>{{ testCase }}</pre>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Examples -->
+                  @if (task.examples.length > 0) {
+                    <div class="task-examples">
+                      <h4>💡 Examples</h4>
+                      <div class="examples">
+                        @for (example of task.examples; track $index) {
+                          <div class="example">
+                            <pre>{{ example }}</pre>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Starter Code -->
+                  @if (task.starterCode) {
+                    <div class="starter-code">
+                      <h4>🚀 Starter Code</h4>
+                      <pre class="code-block">{{ task.starterCode }}</pre>
+                    </div>
+                  }
+                </div>
+
+                <!-- Code Submission -->
+                <div class="code-submission">
+                  <div class="submission-header">
+                    <h4>💻 Your Solution</h4>
+                    @if (timeSpentMinutes() > 0) {
+                      <div class="timer">
+                        ⏱️ Time: {{ formatTimeSpent(timeSpentMinutes()) }}
+                      </div>
+                    }
+                  </div>
+
+                  <textarea
+                    [value]="submittedCode()"
+                    (input)="submittedCode.set($any($event.target).value)"
+                    placeholder="Write your code solution here..."
+                    class="code-textarea"
+                    rows="20"
+                  ></textarea>
+
+                  <div class="submission-notes">
+                    <label for="userNotes">📝 Notes (optional):</label>
+                    <textarea
+                      id="userNotes"
+                      [value]="userNotes()"
+                      (input)="userNotes.set($any($event.target).value)"
+                      placeholder="Any additional notes about your solution..."
+                      class="notes-textarea"
+                      rows="3"
+                    ></textarea>
+                  </div>
+
+                  <div class="submission-actions">
+                    <button 
+                      class="submit-btn"
+                      (click)="submitCode()"
+                      [disabled]="isLoading() || !submittedCode().trim()"
+                    >
+                      🔥 Submit for Roasting
+                    </button>
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <!-- No Task State -->
+              <div class="no-task">
+                <div class="no-task-content">
+                  <h3>🎯 Ready to get roasted?</h3>
+                  <p>Click "New Task" to get a coding challenge based on your skill level!</p>
+                  <button class="start-btn" (click)="loadNewTask()">
+                    🚀 Get Started
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Results Tab -->
+      @if (activeTab() === 'results' && submissionResult(); as result) {
+        <div class="tab-pane">
+          <div class="results-section">
+            <div class="result-header" [class.roasted]="result.isRoasted" [class.praised]="result.isPraised">
+              <div class="result-title">
+                <h2>
+                  @if (result.isPraised) {
+                    <span>🎉 Great Job!</span>
+                  }
+                  @if (result.isRoasted) {
+                    <span>🔥 You Got Roasted!</span>
+                  }
+                </h2>
+                <div class="result-score" [style.color]="getScoreColor(result.overallScore)">
+                  {{ result.overallScore }}/100
+                </div>
+              </div>
+              <div class="result-severity">
+                {{ getRoastSeverityEmoji(result.roastSeverity) }} {{ getRoastSeverityName(result.roastSeverity) }} Roast
+              </div>
+            </div>
+
+            <div class="result-content">
+              <!-- Roast Message -->
+              <div class="roast-message-card">
+                <h3>🔥 The Roast</h3>
+                <p class="roast-message">{{ result.roastMessage }}</p>
+              </div>
+
+              <!-- Technical Feedback -->
+              <div class="technical-feedback-card">
+                <h3>🔧 Technical Feedback</h3>
+                <p class="technical-feedback">{{ result.technicalFeedback }}</p>
+              </div>
+
+              <!-- Quality Assessment -->
+              <div class="quality-assessment">
+                <h3>📊 Quality Assessment</h3>
+                <div class="quality-scores">
+                  <div class="quality-score">
+                    <span class="score-label">Readability</span>
+                    <div class="score-bar">
+                      <div class="score-fill" [style.width.%]="result.qualityAssessment.readabilityScore"></div>
+                    </div>
+                    <span class="score-value">{{ result.qualityAssessment.readabilityScore }}/100</span>
+                  </div>
+                  <div class="quality-score">
+                    <span class="score-label">Performance</span>
+                    <div class="score-bar">
+                      <div class="score-fill" [style.width.%]="result.qualityAssessment.performanceScore"></div>
+                    </div>
+                    <span class="score-value">{{ result.qualityAssessment.performanceScore }}/100</span>
+                  </div>
+                  <div class="quality-score">
+                    <span class="score-label">Correctness</span>
+                    <div class="score-bar">
+                      <div class="score-fill" [style.width.%]="result.qualityAssessment.correctnessScore"></div>
+                    </div>
+                    <span class="score-value">{{ result.qualityAssessment.correctnessScore }}/100</span>
+                  </div>
+                  <div class="quality-score">
+                    <span class="score-label">Best Practices</span>
+                    <div class="score-bar">
+                      <div class="score-fill" [style.width.%]="result.qualityAssessment.bestPracticesScore"></div>
+                    </div>
+                    <span class="score-value">{{ result.qualityAssessment.bestPracticesScore }}/100</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Detailed Feedback -->
+              <div class="detailed-feedback">
+                <div class="feedback-grid">
+                  
+                  <!-- Positive Points -->
+                  @if (result.qualityAssessment.positivePoints.length > 0) {
+                    <div class="feedback-card positive">
+                      <h4>✅ What You Did Well</h4>
+                      <ul>
+                        @for (point of result.qualityAssessment.positivePoints; track $index) {
+                          <li>{{ point }}</li>
+                        }
+                      </ul>
+                    </div>
+                  }
+
+                  <!-- Improvement Points -->
+                  @if (result.qualityAssessment.improvementPoints.length > 0) {
+                    <div class="feedback-card improvement">
+                      <h4>💡 Areas for Improvement</h4>
+                      <ul>
+                        @for (point of result.qualityAssessment.improvementPoints; track $index) {
+                          <li>{{ point }}</li>
+                        }
+                      </ul>
+                    </div>
+                  }
+
+                  <!-- Red Flags -->
+                  @if (result.qualityAssessment.redFlags.length > 0) {
+                    <div class="feedback-card warning">
+                      <h4>🚨 Red Flags</h4>
+                      <ul>
+                        @for (flag of result.qualityAssessment.redFlags; track $index) {
+                          <li>{{ flag }}</li>
+                        }
+                      </ul>
+                    </div>
+                  }
+
+                  <!-- Code Patterns -->
+                  @if (result.qualityAssessment.detectedPatterns.length > 0) {
+                    <div class="feedback-card info">
+                      <h4>🔍 Detected Patterns</h4>
+                      <div class="pattern-tags">
+                        @for (pattern of result.qualityAssessment.detectedPatterns; track pattern) {
+                          <span class="pattern-tag">
+                            {{ pattern }}
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  }
+
+                  <!-- Code Smells -->
+                  @if (result.qualityAssessment.codeSmells.length > 0) {
+                    <div class="feedback-card warning">
+                      <h4>👃 Code Smells</h4>
+                      <div class="smell-tags">
+                        @for (smell of result.qualityAssessment.codeSmells; track smell) {
+                          <span class="smell-tag">
+                            {{ smell }}
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Submission Details -->
+              <div class="submission-details">
+                <h3>📋 Submission Details</h3>
+                <div class="details-grid">
+                  <div class="detail-item">
+                    <span class="detail-label">Task:</span>
+                    <span class="detail-value">{{ result.taskTitle }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Time Spent:</span>
+                    <span class="detail-value">{{ formatTimeSpent(result.timeSpentMinutes) }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Submitted:</span>
+                    <span class="detail-value">{{ formatDate(result.submittedAt) }}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Code Style:</span>
+                    <span class="detail-value">{{ result.qualityAssessment.codeStyle }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="result-actions">
+                <button class="action-btn" (click)="loadNewTask()">
+                  🔄 Try Another Task
+                </button>
+                <button class="action-btn secondary" (click)="setActiveTab('dashboard')">
+                  🏠 Back to Dashboard
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- History Tab -->
+      @if (activeTab() === 'history') {
+        <div class="tab-pane">
+          <div class="history-section">
+            <h2>📚 Your Roast History</h2>
+            
+            @if (roastHistory().length > 0) {
+              <div class="history-list">
+                @for (roast of roastHistory(); track roast.id) {
+                  <div 
+                    class="history-item"
+                    [class.roasted]="roast.isRoasted"
+                    [class.praised]="roast.isPraised"
+                    (click)="submissionResult.set(roast); setActiveTab('results')"
+                  >
+                    <div class="history-header">
+                      <h4>{{ roast.taskTitle }}</h4>
+                      <div class="history-score" [style.color]="getScoreColor(roast.overallScore)">
+                        {{ roast.overallScore }}/100
+                      </div>
+                    </div>
+                    <p class="history-roast">{{ roast.roastMessage }}</p>
+                    <div class="history-meta">
+                      <span class="history-severity">
+                        {{ getRoastSeverityEmoji(roast.roastSeverity) }} {{ getRoastSeverityName(roast.roastSeverity) }}
+                      </span>
+                      <span class="history-time">{{ formatTimeSpent(roast.timeSpentMinutes) }}</span>
+                      <span class="history-date">{{ formatDate(roast.submittedAt) }}</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="no-history">
+                <h3>📝 No roasts yet!</h3>
+                <p>Start submitting code to build your roast history.</p>
+                <button class="start-btn" (click)="setActiveTab('challenge')">
+                  💻 Start Coding
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Hall of Fame Tab -->
+      @if (activeTab() === 'hall-of-fame') {
+        <div class="tab-pane">
+          <div class="hall-of-fame-section">
+            <h2>🏆 Hall of Fame</h2>
+            
+            @if (hallOfFame(); as hall) {
+              <div class="hall-of-fame-content">
+                
+                <!-- Best Scores -->
+                <div class="hall-category">
+                  <h3>🥇 Best Scores</h3>
+                  <div class="hall-entries">
+                    @for (entry of hall.bestScores; track entry.username) {
+                      <div class="hall-entry best">
+                        <div class="hall-rank">{{ $index + 1 }}</div>
+                        <div class="hall-user">
+                          <h4>{{ entry.firstName }} {{ entry.lastName }}</h4>
+                          <p>&#64;{{ entry.username }}</p>
+                          <span class="hall-tech">{{ getTechnologyStackName(entry.techStack) }}</span>
+                          <span class="hall-zodiac">{{ getZodiacEmoji(entry.zodiacSign) }}</span>
+                        </div>
+                        <div class="hall-achievement">
+                          <div class="hall-score best-score">{{ entry.score }}/100</div>
+                          <p class="hall-task">{{ entry.taskTitle }}</p>
+                          <span class="hall-date">{{ formatDate(entry.submittedAt) }}</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <!-- Brutal Roasts -->
+                <div class="hall-category">
+                  <h3>🔥 Most Brutal Roasts</h3>
+                  <div class="hall-entries">
+                    @for (entry of hall.funniestRoasts; track entry.username) {
+                      <div class="hall-entry brutal">
+                        <div class="hall-rank">{{ $index + 1 }}</div>
+                        <div class="hall-user">
+                          <h4>{{ entry.firstName }} {{ entry.lastName }}</h4>
+                          <p>&#64;{{ entry.username }}</p>
+                          <span class="hall-tech">{{ getTechnologyStackName(entry.techStack) }}</span>
+                          <span class="hall-zodiac">{{ getZodiacEmoji(entry.zodiacSign) }}</span>
+                        </div>
+                        <div class="hall-achievement">
+                          <div class="hall-roast-severity">
+                            {{ getRoastSeverityEmoji(entry.roastSeverity) }} {{ getRoastSeverityName(entry.roastSeverity) }}
+                          </div>
+                          <p class="hall-roast-message">{{ entry.roastMessage }}</p>
+                          <span class="hall-date">{{ formatDate(entry.submittedAt) }}</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+
+                <!-- Worst Scores -->
+                <div class="hall-category">
+                  <h3>💀 Hall of Shame (Worst Scores)</h3>
+                  <div class="hall-entries">
+                    @for (entry of hall.worstScores; track entry.username) {
+                      <div class="hall-entry worst">
+                        <div class="hall-rank">{{ $index + 1 }}</div>
+                        <div class="hall-user">
+                          <h4>{{ entry.firstName }} {{ entry.lastName }}</h4>
+                          <p>&#64;{{ entry.username }}</p>
+                          <span class="hall-tech">{{ getTechnologyStackName(entry.techStack) }}</span>
+                          <span class="hall-zodiac">{{ getZodiacEmoji(entry.zodiacSign) }}</span>
+                        </div>
+                        <div class="hall-achievement">
+                          <div class="hall-score worst-score">{{ entry.score }}/100</div>
+                          <p class="hall-task">{{ entry.taskTitle }}</p>
+                          <span class="hall-date">{{ formatDate(entry.submittedAt) }}</span>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

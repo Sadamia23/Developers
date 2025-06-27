@@ -1,0 +1,313 @@
+ .registration-container {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .registration-card {
+      background: rgba(30, 30, 46, 0.95);
+      backdrop-filter: blur(20px);
+      border-radius: 24px;
+      padding: 3rem;
+      width: 100%;
+      max-width: 600px;
+      box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .registration-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .title {
+      font-size: 2.5rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin: 0 0 0.5rem 0;
+      letter-spacing: -0.025em;
+    }
+
+    .subtitle {
+      color: #a1a1aa;
+      font-size: 1.125rem;
+      margin: 0;
+      font-weight: 400;
+    }
+
+    .form {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .form-section {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .section-title {
+      color: #e4e4e7;
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin: 0;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .label {
+      color: #e4e4e7;
+      font-size: 0.875rem;
+      font-weight: 500;
+      letter-spacing: 0.025em;
+    }
+
+    .input,
+    .select {
+      background: rgba(15, 15, 35, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 0.875rem 1rem;
+      color: #e4e4e7;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    .input:focus,
+    .select:focus {
+      border-color: #8b5cf6;
+      box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+      background: rgba(15, 15, 35, 0.95);
+    }
+
+    .input::placeholder {
+      color: #6b7280;
+    }
+
+    .input.error,
+    .select.error {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+
+    .radio-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .radio-item {
+      position: relative;
+    }
+
+    .radio-input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      cursor: pointer;
+      padding: 1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(15, 15, 35, 0.5);
+      transition: all 0.2s ease;
+    }
+
+    .radio-label:hover {
+      border-color: rgba(139, 92, 246, 0.5);
+      background: rgba(15, 15, 35, 0.8);
+    }
+
+    .radio-input:checked + .radio-label {
+      border-color: #8b5cf6;
+      background: rgba(139, 92, 246, 0.1);
+    }
+
+    .radio-custom {
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      position: relative;
+      flex-shrink: 0;
+      margin-top: 0.125rem;
+      transition: all 0.2s ease;
+    }
+
+    .radio-input:checked + .radio-label .radio-custom {
+      border-color: #8b5cf6;
+    }
+
+    .radio-input:checked + .radio-label .radio-custom::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 10px;
+      height: 10px;
+      background: #8b5cf6;
+      border-radius: 50%;
+    }
+
+    .radio-text {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .radio-title {
+      color: #e4e4e7;
+      font-weight: 500;
+      font-size: 0.875rem;
+    }
+
+    .radio-description {
+      color: #a1a1aa;
+      font-size: 0.75rem;
+    }
+
+    .submit-button {
+      background: linear-gradient(135deg, #8b5cf6 0%, #06b6d4 100%);
+      border: none;
+      border-radius: 12px;
+      padding: 1rem 2rem;
+      color: white;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+      margin-top: 1rem;
+    }
+
+    .submit-button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.4);
+    }
+
+    .submit-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .button-text,
+    .button-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top: 2px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .error-message {
+      color: #ef4444;
+      font-size: 0.875rem;
+      margin-top: 0.25rem;
+    }
+
+    .form-error {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 8px;
+      padding: 0.75rem;
+      color: #fca5a5;
+      font-size: 0.875rem;
+      text-align: center;
+    }
+
+    .form-footer {
+      text-align: center;
+      margin-top: 1rem;
+    }
+
+    .footer-text {
+      color: #a1a1aa;
+      font-size: 0.875rem;
+      margin: 0;
+    }
+
+    .footer-link {
+      color: #8b5cf6;
+      text-decoration: none;
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+
+    .footer-link:hover {
+      color: #06b6d4;
+    }
+
+    @media (max-width: 640px) {
+      .registration-container {
+        padding: 1rem;
+      }
+
+      .registration-card {
+        padding: 2rem;
+      }
+
+      .title {
+        font-size: 2rem;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+    }

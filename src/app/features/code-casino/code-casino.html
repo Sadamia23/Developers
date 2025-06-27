@@ -1,0 +1,404 @@
+<!-- Updated features/code-casino/code-casino.component.html -->
+<app-navbar></app-navbar>
+
+<div class="casino-container">
+  <div class="casino-content">
+    <!-- Header -->
+    <div class="casino-header">
+      <h1 class="casino-title">🎰 Code Casino</h1>
+      <p class="casino-subtitle">Test your coding skills and win points!</p>
+      
+      <!-- User Stats Summary -->
+      <div class="stats-summary" *ngIf="userStats() as stats">
+        <div class="stat-item">
+          <span class="stat-label">Points:</span>
+          <span class="stat-value">{{ stats.totalPoints }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Streak:</span>
+          <span class="stat-value">🔥 {{ stats.currentStreak }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Win Rate:</span>
+          <span class="stat-value">{{ stats.winRate.toFixed(1) }}%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error Message -->
+    <div class="error-message" *ngIf="errorMessage()" (click)="clearError()">
+      <span>❌ {{ errorMessage() }}</span>
+      <button class="close-error">×</button>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div class="loading-spinner" *ngIf="isLoading()">
+      <div class="spinner"></div>
+      <p>Loading...</p>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+      <button 
+        class="tab-button"
+        [class.active]="activeTab() === 'challenge'"
+        (click)="setActiveTab('challenge')"
+      >
+        🎯 Challenge
+      </button>
+      <button 
+        class="tab-button"
+        [class.active]="activeTab() === 'daily'"
+        (click)="setActiveTab('daily')"
+      >
+        📅 Daily Challenge
+      </button>
+      <button 
+        class="tab-button"
+        [class.active]="activeTab() === 'stats'"
+        (click)="setActiveTab('stats')"
+      >
+        📊 Stats
+      </button>
+      <button 
+        class="tab-button"
+        [class.active]="activeTab() === 'leaderboard'"
+        (click)="loadLeaderboard()"
+      >
+        🏆 Leaderboard
+      </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      
+      <!-- Random Challenge Tab -->
+      <div class="tab-pane" *ngIf="activeTab() === 'challenge'">
+        <div class="challenge-section">
+          <div class="challenge-header">
+            <h2>Random Challenge</h2>
+            <button class="new-challenge-btn" (click)="loadRandomChallenge()" [disabled]="isLoading()">
+              🔄 New Challenge
+            </button>
+          </div>
+
+          <div class="challenge-content" *ngIf="currentChallenge() as challenge">
+            <div class="challenge-info">
+              <h3>{{ challenge.title }}</h3>
+              <p class="challenge-description">{{ challenge.description }}</p>
+              <div class="challenge-meta">
+                <span class="tech-stack">{{ getTechnologyStackName(challenge.techStack) }}</span>
+                <span class="difficulty">{{ getExperienceLevelName(challenge.difficultyLevel) }}</span>
+                <span class="multiplier">{{ challenge.bonusMultiplier }}x Points</span>
+              </div>
+            </div>
+
+            <!-- Enhanced Code Options with Syntax Highlighting -->
+            <div class="code-options-grid">
+              <div class="code-option-wrapper" 
+                   [class.selected]="selectedOption() === 1"
+                   (click)="selectOption(1)">
+                <div class="option-header">
+                  <h4>🔥 Option 1</h4>
+                  <div class="selection-indicator" *ngIf="selectedOption() === 1">
+                    ✅ Selected
+                  </div>
+                </div>
+                <app-code-highlight 
+                  [code]="challenge.codeOption1"
+                  [language]="challenge.techStack"
+                  [showLineNumbers]="true">
+                </app-code-highlight>
+              </div>
+
+              <div class="code-option-wrapper" 
+                   [class.selected]="selectedOption() === 2"
+                   (click)="selectOption(2)">
+                <div class="option-header">
+                  <h4>⚡ Option 2</h4>
+                  <div class="selection-indicator" *ngIf="selectedOption() === 2">
+                    ✅ Selected
+                  </div>
+                </div>
+                <app-code-highlight 
+                  [code]="challenge.codeOption2"
+                  [language]="challenge.techStack"
+                  [showLineNumbers]="true">
+                </app-code-highlight>
+              </div>
+            </div>
+
+            <!-- Betting Section -->
+            <div class="betting-section" *ngIf="!showResult()">
+              <div class="bet-controls">
+                <label for="betAmount">Bet Amount:</label>
+                <input 
+                  type="number" 
+                  id="betAmount"
+                  [value]="betAmount()"
+                  (input)="setBetAmount(+$any($event.target).value)"
+                  [max]="userStats()?.totalPoints || 1000"
+                  min="1"
+                  class="bet-input"
+                >
+                <button 
+                  class="place-bet-btn"
+                  [disabled]="!selectedOption() || isLoading()"
+                  (click)="placeBet(challenge.id)"
+                >
+                  🎰 Place Bet
+                </button>
+              </div>
+              <div class="bet-hint" *ngIf="selectedOption()">
+                💡 You've chosen Option {{ selectedOption() }}. Ready to bet {{ betAmount() }} points?
+              </div>
+            </div>
+
+            <!-- Enhanced Game Result -->
+            <div class="game-result" *ngIf="showResult() && gameResult() as result">
+              <div class="result-header" [class.won]="result.isCorrect" [class.lost]="!result.isCorrect">
+                <h3>{{ result.isCorrect ? '🎉 You Won!' : '😞 You Lost!' }}</h3>
+                <div class="points-change">
+                  <span *ngIf="result.isCorrect">+{{ result.pointsWon }} points</span>
+                  <span *ngIf="!result.isCorrect">-{{ result.pointsLost }} points</span>
+                </div>
+              </div>
+
+              <div class="result-details">
+                <p><strong>New Total:</strong> {{ result.newTotalPoints }} points</p>
+                <p><strong>Current Streak:</strong> {{ result.currentStreak }}</p>
+                <p><strong>Luck Multiplier:</strong> {{ result.luckMultiplier.toFixed(2) }}x</p>
+              </div>
+
+              <div class="explanation">
+                <h4>💡 Explanation:</h4>
+                <p>{{ result.explanation }}</p>
+              </div>
+
+              <div class="code-comparison">
+                <div class="comparison-section correct">
+                  <h4>✅ Correct Code:</h4>
+                  <app-code-highlight 
+                    [code]="result.correctCode"
+                    [language]="challenge.techStack"
+                    [showLineNumbers]="true">
+                  </app-code-highlight>
+                </div>
+                <div class="comparison-section buggy">
+                  <h4>❌ Buggy Code:</h4>
+                  <app-code-highlight 
+                    [code]="result.buggyCode"
+                    [language]="challenge.techStack"
+                    [showLineNumbers]="true">
+                  </app-code-highlight>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="no-challenge" *ngIf="!currentChallenge()">
+            <p>Click "New Challenge" to get started!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Challenge Tab -->
+      <div class="tab-pane" *ngIf="activeTab() === 'daily'">
+        <div class="daily-challenge-section">
+          <div class="daily-header">
+            <h2>📅 Daily Challenge</h2>
+            <button class="refresh-btn" (click)="loadDailyChallenge()" [disabled]="isLoading()">
+              🔄 Refresh
+            </button>
+          </div>
+
+          <div class="daily-content" *ngIf="dailyChallenge() as daily">
+            <div class="daily-info">
+              <div class="daily-meta">
+                <p><strong>Date:</strong> {{ formatDate(daily.challengeDate) }}</p>
+                <p><strong>Bonus:</strong> {{ daily.bonusMultiplier }}x points!</p>
+                <p class="daily-status" [class.played]="daily.hasPlayed">
+                  {{ daily.hasPlayed ? '✅ Already played today' : '⏰ Available to play' }}
+                </p>
+              </div>
+            </div>
+
+            <div class="challenge-content">
+              <div class="challenge-info">
+                <h3>{{ daily.challenge.title }}</h3>
+                <p class="challenge-description">{{ daily.challenge.description }}</p>
+                <div class="challenge-meta">
+                  <span class="tech-stack">{{ getTechnologyStackName(daily.challenge.techStack) }}</span>
+                  <span class="difficulty">{{ getExperienceLevelName(daily.challenge.difficultyLevel) }}</span>
+                  <span class="multiplier special">{{ daily.challenge.bonusMultiplier }}x Points</span>
+                </div>
+              </div>
+
+              <!-- Enhanced Daily Challenge Code Options -->
+              <div class="code-options-grid" *ngIf="!daily.hasPlayed">
+                <div class="code-option-wrapper" 
+                     [class.selected]="selectedOption() === 1"
+                     (click)="selectOption(1)">
+                  <div class="option-header">
+                    <h4>🔥 Option 1</h4>
+                    <div class="selection-indicator" *ngIf="selectedOption() === 1">
+                      ✅ Selected
+                    </div>
+                  </div>
+                  <app-code-highlight 
+                    [code]="daily.challenge.codeOption1"
+                    [language]="daily.challenge.techStack"
+                    [showLineNumbers]="true">
+                  </app-code-highlight>
+                </div>
+
+                <div class="code-option-wrapper" 
+                     [class.selected]="selectedOption() === 2"
+                     (click)="selectOption(2)">
+                  <div class="option-header">
+                    <h4>⚡ Option 2</h4>
+                    <div class="selection-indicator" *ngIf="selectedOption() === 2">
+                      ✅ Selected
+                    </div>
+                  </div>
+                  <app-code-highlight 
+                    [code]="daily.challenge.codeOption2"
+                    [language]="daily.challenge.techStack"
+                    [showLineNumbers]="true">
+                  </app-code-highlight>
+                </div>
+              </div>
+
+              <!-- Betting Section -->
+              <div class="betting-section" *ngIf="!daily.hasPlayed && !showResult()">
+                <div class="bet-controls">
+                  <label for="dailyBetAmount">Bet Amount:</label>
+                  <input 
+                    type="number" 
+                    id="dailyBetAmount"
+                    [value]="betAmount()"
+                    (input)="setBetAmount(+$any($event.target).value)"
+                    [max]="userStats()?.totalPoints || 1000"
+                    min="1"
+                    class="bet-input"
+                  >
+                  <button 
+                    class="place-bet-btn daily"
+                    [disabled]="!selectedOption() || isLoading()"
+                    (click)="placeBet(daily.challenge.id)"
+                  >
+                    ⭐ Place Daily Bet
+                  </button>
+                </div>
+                <div class="bet-hint" *ngIf="selectedOption()">
+                  🌟 Daily Challenge: {{ daily.bonusMultiplier }}x multiplier! Betting {{ betAmount() }} points on Option {{ selectedOption() }}.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="no-daily" *ngIf="!dailyChallenge()">
+            <p>Loading today's daily challenge...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Tab -->
+      <div class="tab-pane" *ngIf="activeTab() === 'stats'">
+        <div class="stats-section" *ngIf="userStats() as stats">
+          <h2>📊 Your Statistics</h2>
+          
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-icon">💰</div>
+              <div class="stat-info">
+                <h3>Total Points</h3>
+                <p class="stat-number">{{ stats.totalPoints }}</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">🔥</div>
+              <div class="stat-info">
+                <h3>Current Streak</h3>
+                <p class="stat-number">{{ stats.currentStreak }}</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">🏆</div>
+              <div class="stat-info">
+                <h3>Longest Streak</h3>
+                <p class="stat-number">{{ stats.longestStreak }}</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">🎮</div>
+              <div class="stat-info">
+                <h3>Games Played</h3>
+                <p class="stat-number">{{ stats.totalGamesPlayed }}</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">✅</div>
+              <div class="stat-info">
+                <h3>Games Won</h3>
+                <p class="stat-number">{{ stats.totalGamesWon }}</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">📈</div>
+              <div class="stat-info">
+                <h3>Win Rate</h3>
+                <p class="stat-number">{{ stats.winRate.toFixed(1) }}%</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="daily-status">
+            <h3>Daily Challenge Status</h3>
+            <p *ngIf="stats.canPlayDailyChallenge">✅ You can play today's daily challenge!</p>
+            <p *ngIf="!stats.canPlayDailyChallenge">⏰ You've already played today's daily challenge.</p>
+            <p *ngIf="stats.lastDailyChallenge">
+              Last played: {{ formatDate(stats.lastDailyChallenge) }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leaderboard Tab -->
+      <div class="tab-pane" *ngIf="activeTab() === 'leaderboard'">
+        <div class="leaderboard-section">
+          <h2>🏆 Leaderboard</h2>
+          
+          <div class="leaderboard-list" *ngIf="leaderboard().length > 0">
+            <div class="leaderboard-item" *ngFor="let player of leaderboard()">
+              <div class="rank">{{ getRankEmoji(player.rank) }}</div>
+              <div class="player-info">
+                <h4>{{ player.firstName }} {{ player.lastName }}</h4>
+                <p>&#64;{{ player.username }}</p>
+                <div class="player-meta">
+                  <span>{{ getTechnologyStackName(player.techStack) }}</span>
+                  <span>{{ getZodiacEmoji(player.zodiacSign) }}</span>
+                </div>
+              </div>
+              <div class="player-stats">
+                <div class="points">{{ player.totalPoints }} pts</div>
+                <div class="streak">{{ player.currentStreak }} 🔥</div>
+                <div class="wins">{{ player.totalGamesWon }} wins</div>
+                <div class="winrate">{{ player.winRate.toFixed(1) }}%</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="no-leaderboard" *ngIf="leaderboard().length === 0">
+            <p>Loading leaderboard...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
