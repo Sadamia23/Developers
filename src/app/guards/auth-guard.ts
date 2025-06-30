@@ -8,7 +8,6 @@ const authService = inject(AuthService);
 
   console.log('🛡️ AuthGuard: Checking authentication...');
   
-  // Wait for auth initialization
   await authService.waitForAuthInit();
   
   const isAuthenticated = authService.isAuthenticated();
@@ -29,7 +28,6 @@ export const guestGuard: CanActivateFn = async (route, state) => {
 
   console.log('🛡️ GuestGuard: Checking authentication...');
   
-  // Wait for auth initialization
   await authService.waitForAuthInit();
   
   const isAuthenticated = authService.isAuthenticated();

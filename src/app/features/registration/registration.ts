@@ -108,7 +108,6 @@ export class RegistrationComponent {
         const result = await this.authService.register(registerDto);
         
         if (result.success) {
-          // Redirect to profile page on successful registration
           await this.router.navigate(['/profile']);
         } else {
           this.errorMessage.set(result.message || 'Registration failed');

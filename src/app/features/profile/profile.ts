@@ -1,4 +1,3 @@
-// components/profile.component.ts
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -19,7 +18,6 @@ export class ProfileComponent implements OnInit {
   authService = inject(AuthService);
 
   ngOnInit() {
-    // Ensure user profile is loaded
     if (!this.authService.currentUser()) {
       this.authService.getProfile();
     }

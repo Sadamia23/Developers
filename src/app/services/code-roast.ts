@@ -9,9 +9,8 @@ import { ExperienceLevel } from '../types/enums/enums';
 })
 export class CodeRoastService {
   private http = inject(HttpClient);
-  private baseUrl = 'https://localhost:7276/api/coderoast'; // ✅ FIXED: Changed from codecasino to coderoast
+  private baseUrl = 'https://localhost:7276/api/coderoast';
 
-  // Common HTTP options for all requests
   private getHttpOptions() {
     return {
       withCredentials: true,
@@ -22,9 +21,6 @@ export class CodeRoastService {
     };
   }
 
-  /**
-   * Get the dashboard with user stats, recent roasts, recommended tasks, and hall of fame
-   */
   async getDashboard(): Promise<CodeRoastDashboardDto> {
     try {
       console.log('🔥 CodeRoastService: Getting dashboard...');
@@ -44,9 +40,6 @@ export class CodeRoastService {
     }
   }
 
-  /**
-   * Get a coding task based on difficulty level
-   */
   async getTask(difficulty: ExperienceLevel = ExperienceLevel.Junior): Promise<CodeRoastTaskDto> {
     try {
       console.log('🔥 CodeRoastService: Getting task with difficulty:', difficulty);
@@ -67,9 +60,6 @@ export class CodeRoastService {
     }
   }
 
-  /**
-   * Submit code for roasting and evaluation
-   */
   async submitCode(submission: CodeRoastSubmissionDto): Promise<CodeRoastResultDto> {
     try {
       console.log('🔥 CodeRoastService: Submitting code for roasting...');
@@ -89,9 +79,6 @@ export class CodeRoastService {
     }
   }
 
-  /**
-   * Get user's code roast statistics
-   */
   async getUserStats(): Promise<CodeRoastStatsDto> {
     try {
       console.log('🔥 CodeRoastService: Getting user stats...');
@@ -111,9 +98,6 @@ export class CodeRoastService {
     }
   }
 
-  /**
-   * Get user's roast history
-   */
   async getRoastHistory(limit: number = 10): Promise<CodeRoastResultDto[]> {
     try {
       console.log('🔥 CodeRoastService: Getting roast history...');
@@ -133,9 +117,6 @@ export class CodeRoastService {
     }
   }
 
-  /**
-   * Get hall of fame - best and worst roasts
-   */
   async getHallOfFame(): Promise<CodeRoastHallOfFameDto> {
     try {
       console.log('🔥 CodeRoastService: Getting hall of fame...');
@@ -155,9 +136,6 @@ export class CodeRoastService {
     }
   }
 
-  /**
-   * Initialize user stats (if not exists)
-   */
   async initializeUserStats(): Promise<void> {
     try {
       console.log('🔥 CodeRoastService: Initializing user stats...');
@@ -171,12 +149,8 @@ export class CodeRoastService {
     }
   }
 
-  /**
-   * Handle HTTP errors and convert them to meaningful messages
-   */
   private handleError(error: any, defaultMessage: string): Error {
     if (error instanceof HttpErrorResponse) {
-      // Server error
       if (error.status === 0) {
         return new Error('Unable to connect to server. Please check your internet connection.');
       }
@@ -197,7 +171,6 @@ export class CodeRoastService {
         return new Error('Server error occurred. Please try again later.');
       }
       
-      // Try to extract error message from response
       if (error.error?.message) {
         return new Error(error.error.message);
       }
@@ -205,7 +178,6 @@ export class CodeRoastService {
       return new Error(`Server returned ${error.status}: ${error.statusText}`);
     }
     
-    // Network or other errors
     if (error instanceof Error) {
       return error;
     }

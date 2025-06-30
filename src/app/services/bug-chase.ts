@@ -1,4 +1,3 @@
-// services/bug-chase.service.ts
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom, catchError, throwError } from 'rxjs';
@@ -16,10 +15,8 @@ import {
 export class BugChaseService {
   private http = inject(HttpClient);
 
-  // ⭐ CHANGE THIS TO YOUR ACTUAL API URL
   private readonly API_BASE_URL = 'https://localhost:7276/api/bugchase';
 
-  // Common HTTP options for all requests
   private getHttpOptions() {
     return {
       withCredentials: true,
@@ -30,9 +27,6 @@ export class BugChaseService {
     };
   }
 
-  /**
-   * Initialize bug chase stats for the current user
-   */
   async initializeUserStats(): Promise<void> {
     console.log('🏃 BugChaseService: Initializing user stats...');
     
@@ -50,9 +44,6 @@ export class BugChaseService {
     }
   }
 
-  /**
-   * Get bug chase dashboard with user stats, leaderboard, and recent games
-   */
   async getDashboard(): Promise<BugChaseDashboardDto> {
     console.log('🏃 BugChaseService: Getting dashboard...');
     
@@ -71,9 +62,6 @@ export class BugChaseService {
     }
   }
 
-  /**
-   * Submit a new bug chase score
-   */
   async submitScore(scoreDto: BugChaseScoreDto): Promise<BugChaseGameResultDto> {
     console.log('🏃 BugChaseService: Submitting score...', scoreDto);
     
@@ -92,9 +80,6 @@ export class BugChaseService {
     }
   }
 
-  /**
-   * Get current user's bug chase statistics
-   */
   async getUserStats(): Promise<BugChaseStatsDto> {
     console.log('🏃 BugChaseService: Getting user stats...');
     
@@ -113,9 +98,6 @@ export class BugChaseService {
     }
   }
 
-  /**
-   * Get bug chase leaderboard
-   */
   async getLeaderboard(limit: number = 5): Promise<BugChaseLeaderboardEntryDto[]> {
     console.log('🏃 BugChaseService: Getting leaderboard...');
     
@@ -134,9 +116,6 @@ export class BugChaseService {
     }
   }
 
-  /**
-   * Get user's recent bug chase games
-   */
   async getRecentGames(limit: number = 10): Promise<BugChaseGameResultDto[]> {
     console.log('🏃 BugChaseService: Getting recent games...');
     
@@ -155,9 +134,6 @@ export class BugChaseService {
     }
   }
 
-  /**
-   * Helper method to format survival time from seconds to TimeSpan string format
-   */
 formatSurvivalTime(seconds: number): string {
   const totalMilliseconds = Math.floor(seconds * 1000);
   const hours = Math.floor(totalMilliseconds / 3600000);
@@ -165,17 +141,12 @@ formatSurvivalTime(seconds: number): string {
   const secs = Math.floor((totalMilliseconds % 60000) / 1000);
   const ms = totalMilliseconds % 1000;
   
-  // Format as TimeSpan string: "hh:mm:ss.fffffff"
   return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(3, '0')}0000`;
 }
 
 
-  /**
-   * Helper method to parse TimeSpan string to display format
-   */
  parseTimeSpanToDisplay(timeSpanString: string): string {
   try {
-    // Parse TimeSpan string format like "00:01:30.4500000"
     const parts = timeSpanString.split(':');
     if (parts.length !== 3) return timeSpanString;
     
@@ -184,11 +155,9 @@ formatSurvivalTime(seconds: number): string {
     const secondsParts = parts[2].split('.');
     const seconds = parseInt(secondsParts[0], 10);
     
-    // FIXED: Always show HH:MM:SS format (no milliseconds)
     if (hours > 0) {
       return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     } else {
-      // Even when hours = 0, show MM:SS format (no milliseconds)
       return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
   } catch {
@@ -196,12 +165,8 @@ formatSurvivalTime(seconds: number): string {
   }
 }
 
-  /**
-   * Helper method to parse survival time string to seconds
-   */
 parseSurvivalTime(timeString: string): number {
   try {
-    // Parse formats like "00:01:30.4500000" (TimeSpan format)
     const parts = timeString.split(':');
     if (parts.length !== 3) return 0;
     
@@ -218,9 +183,6 @@ parseSurvivalTime(timeString: string): number {
   }
 }
 
-  /**
-   * Handle HTTP errors
-   */
   private handleError = (error: HttpErrorResponse) => {
     console.error('🔥 Bug Chase HTTP Error:', error);
     console.error('Request URL:', error.url);
@@ -229,10 +191,8 @@ parseSurvivalTime(timeString: string): number {
     let errorMessage = 'An unexpected error occurred';
     
     if (error.error instanceof ErrorEvent) {
-      // Client-side error
       errorMessage = `Client Error: ${error.error.message}`;
     } else {
-      // Server-side error
       console.error('Response status:', error.status);
       console.error('Response body:', error.error);
       

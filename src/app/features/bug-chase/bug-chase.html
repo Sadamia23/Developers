@@ -1,27 +1,22 @@
-<!-- features/bug-chase/bug-chase.component.html -->
 <app-navbar></app-navbar>
 
 <div class="bug-chase-container">
   <div class="bug-chase-content">
-    <!-- Header -->
     <div class="bug-chase-header">
       <h1 class="bug-chase-title">🏃 Bug Chase Game</h1>
       <p class="bug-chase-subtitle">Run, jump, duck, and collect power-ups to survive!</p>
     </div>
 
-    <!-- Error Message -->
     <div class="error-message" *ngIf="errorMessage()" (click)="errorMessage.set(null)">
       <span>❌ {{ errorMessage() }}</span>
       <button class="close-error">×</button>
     </div>
 
-    <!-- Loading Spinner -->
     <div class="loading-spinner" *ngIf="isLoading()">
       <div class="spinner"></div>
       <p>Loading...</p>
     </div>
 
-    <!-- Tab Navigation -->
     <div class="tab-navigation">
       <button 
         class="tab-button"
@@ -46,18 +41,14 @@
       </button>
     </div>
 
-    <!-- Tab Content -->
     <div class="tab-content">
       
-      <!-- Game Tab -->
       <div class="tab-pane" *ngIf="activeTab() === 'game'">
         <div class="game-section">
           
-          <!-- Game Canvas -->
           <div class="game-canvas-container">
             <canvas #gameCanvas class="game-canvas"></canvas>
             
-            <!-- Game Overlay -->
             <div class="game-overlay" *ngIf="!gameState().isPlaying && !gameState().isGameOver">
               <div class="start-screen">
                 <h3>🏃 Ready to Run?</h3>
@@ -69,7 +60,6 @@
               </div>
             </div>
             
-            <!-- Game Over Overlay -->
             <div class="game-overlay game-over" *ngIf="gameState().isGameOver">
               <div class="game-over-screen">
                 <h3>Game Over! 💥</h3>
@@ -91,7 +81,6 @@
               </div>
             </div>
             
-            <!-- Pause Overlay -->
             <div class="game-overlay pause-overlay" *ngIf="gameState().isPaused">
               <div class="pause-screen">
                 <h3>⏸️ Paused</h3>
@@ -105,7 +94,6 @@
 
 
 
-          <!-- Live Game Stats -->
           <div class="live-stats" *ngIf="gameState().isPlaying">
             <h4>📈 Current Run</h4>
             <div class="live-stats-grid">
@@ -137,7 +125,6 @@
             </div>
           </div>
           
-          <!-- Game Controls -->
           <div class="game-controls">
             <h4>🎮 Advanced Controls</h4>
             <div class="controls-grid">
@@ -170,7 +157,6 @@
             </div>
           </div>
 
-          <!-- Game Legend - Updated to reflect new obstacle mechanics -->
           <div class="game-legend">
             <h4>🎯 Game Elements & Strategy</h4>
             <div class="legend-grid">
@@ -234,7 +220,6 @@
         </div>
       </div>
 
-      <!-- Stats Tab -->
       <div class="tab-pane" *ngIf="activeTab() === 'stats'">
         <div class="stats-section" *ngIf="dashboard()?.userStats as stats">
           <h2>📊 Your Bug Chase Statistics</h2>
@@ -313,7 +298,6 @@
             </div>
           </div>
 
-          <!-- Recent Games -->
           <div class="recent-games" *ngIf="dashboard()?.recentGames as recentGames">
             <h3>🕐 Recent Games</h3>
             <div class="recent-games-list" *ngIf="recentGames.length > 0; else noRecentGames">
@@ -347,7 +331,6 @@
         </div>
       </div>
 
-      <!-- Leaderboard Tab -->
       <div class="tab-pane" *ngIf="activeTab() === 'leaderboard'">
         <div class="leaderboard-section">
           <h2>🏆 Top Players</h2>
@@ -379,7 +362,6 @@
       </div>
     </div>
 
-    <!-- Game Result Modal -->
     <div class="result-modal" *ngIf="showResult() && gameResult() as result" (click)="showResult.set(false)">
       <div class="result-content" (click)="$event.stopPropagation()">
         <div class="result-header">

@@ -1,4 +1,3 @@
-// services/casino.service.ts - Updated with better auth handling
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse, HttpHeaders } from '@angular/common/http';
 import { firstValueFrom, catchError, throwError } from 'rxjs';
@@ -18,10 +17,8 @@ import {
 export class CasinoService {
   private http = inject(HttpClient);
 
-  // ⭐ CHANGE THIS TO YOUR ACTUAL API URL
   private readonly API_BASE_URL = 'https://localhost:7276/api/codecasino';
 
-  // Common HTTP options for all requests
   private getHttpOptions() {
     return {
       withCredentials: true,
@@ -32,9 +29,6 @@ export class CasinoService {
     };
   }
 
-  /**
-   * Debug authentication status
-   */
   async debugAuth(): Promise<any> {
     console.log('🔍 CasinoService: Debugging auth...');
     
@@ -53,9 +47,6 @@ export class CasinoService {
     }
   }
 
-  /**
-   * Initialize casino stats for the current user
-   */
   async initializeUserStats(): Promise<void> {
     console.log('🎰 CasinoService: Initializing user stats...');
     
@@ -73,9 +64,6 @@ export class CasinoService {
     }
   }
 
-  /**
-   * Get casino dashboard with user stats, leaderboard, and daily challenge
-   */
   async getDashboard(): Promise<CasinoStatsResponse> {
     console.log('🎰 CasinoService: Getting dashboard...');
     
@@ -94,9 +82,6 @@ export class CasinoService {
     }
   }
 
-  /**
-   * Get a random challenge for the user
-   */
   async getRandomChallenge(): Promise<CodeChallengeDto> {
     console.log('🎰 CasinoService: Getting random challenge...');
     
@@ -115,9 +100,6 @@ export class CasinoService {
     }
   }
 
-  /**
-   * Get today's daily challenge
-   */
   async getDailyChallenge(): Promise<DailyChallengeDto> {
     console.log('🎰 CasinoService: Getting daily challenge...');
     
@@ -136,9 +118,6 @@ export class CasinoService {
     }
   }
 
-  /**
-   * Place a bet on a code challenge
-   */
   async placeBet(betDto: PlaceBetDto): Promise<GameResultDto> {
     console.log('🎰 CasinoService: Placing bet...', betDto);
     
@@ -157,9 +136,6 @@ export class CasinoService {
     }
   }
 
-  /**
-   * Get current user's casino statistics
-   */
   async getUserStats(): Promise<UserStatsDto> {
     console.log('🎰 CasinoService: Getting user stats...');
     
@@ -178,9 +154,6 @@ export class CasinoService {
     }
   }
 
-  /**
-   * Get casino leaderboard
-   */
   async getLeaderboard(limit: number = 10): Promise<LeaderboardEntryDto[]> {
     console.log('🎰 CasinoService: Getting leaderboard...');
     
@@ -199,9 +172,6 @@ export class CasinoService {
     }
   }
 
-  /**
-   * Handle HTTP errors
-   */
   private handleError = (error: HttpErrorResponse) => {
     console.error('🔥 Casino HTTP Error:', error);
     console.error('Request URL:', error.url);
@@ -210,10 +180,8 @@ export class CasinoService {
     let errorMessage = 'An unexpected error occurred';
     
     if (error.error instanceof ErrorEvent) {
-      // Client-side error
       errorMessage = `Client Error: ${error.error.message}`;
     } else {
-      // Server-side error
       console.error('Response status:', error.status);
       console.error('Response body:', error.error);
       

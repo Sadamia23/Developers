@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { NavbarComponent } from '../navbar/navbar';
 import { AuthService } from '../../services/auth';
 import { BugChaseService } from '../../services/bug-chase';
-import { TechnologyStack, ExperienceLevel, ZodiacSign } from '../../types/enums/enums';
+import { TechnologyStack, ZodiacSign } from '../../types/enums/enums';
 import { 
   GameState, 
   GameObject, 
@@ -14,8 +14,6 @@ import {
   GameControls,
   BugChaseDashboardDto,
   BugChaseGameResultDto,
-  BugChaseLeaderboardEntryDto,
-  BugChaseStatsDto 
 } from '../../types/dtos/bug-chase-dtos';
 
 @Component({
@@ -32,12 +30,10 @@ export class BugChaseComponent implements OnInit, AfterViewInit, OnDestroy {
   bugChaseService = inject(BugChaseService);
   router = inject(Router);
 
-  // Game state
   private ctx!: CanvasRenderingContext2D;
   private gameLoop!: number;
   private keys: GameControls = { up: false, down: false, jump: false, duck: false };
   
-  // Game constants
   private readonly CANVAS_WIDTH = 800;
   private readonly CANVAS_HEIGHT = 400;
   private readonly GROUND_HEIGHT = 100;
@@ -48,7 +44,6 @@ export class BugChaseComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly GRAVITY = 0.8;
   private readonly JUMP_FORCE = -15;
   
-  // Game state
   gameState = signal<GameState>({
     isPlaying: false,
     isPaused: false,
@@ -71,7 +66,6 @@ export class BugChaseComponent implements OnInit, AfterViewInit, OnDestroy {
     effects: []
   });
 
-  // Game statistics
   gameStats = signal<GameStats>({
     bugsAvoided: 0,
     deadlinesAvoided: 0,
@@ -80,7 +74,6 @@ export class BugChaseComponent implements OnInit, AfterViewInit, OnDestroy {
     weekendsCollected: 0
   });
 
-  // UI state
   dashboard = signal<BugChaseDashboardDto | null>(null);
   gameResult = signal<BugChaseGameResultDto | null>(null);
   isLoading = signal<boolean>(false);
@@ -88,7 +81,6 @@ export class BugChaseComponent implements OnInit, AfterViewInit, OnDestroy {
   showResult = signal<boolean>(false);
   activeTab = signal<'game' | 'stats' | 'leaderboard'>('game');
 
-  // Timers
   private lastObstacleSpawn = 0;
   private lastPowerUpSpawn = 0;
   private lastSpeedIncrease = 0;
@@ -99,14 +91,12 @@ export class BugChaseComponent implements OnInit, AfterViewInit, OnDestroy {
     try {
       this.isLoading.set(true);
       
-      // Wait for auth
       await this.authService.waitForAuthInit();
       if (!this.authService.isAuthenticated()) {
         this.router.navigate(['/login']);
         return;
       }
 
-      // Initialize user stats and load dashboard
       await this.bugChaseService.initializeUserStats();
       await this.loadDashboard();
       
@@ -122,7 +112,6 @@ ngAfterViewInit() {
   console.log('🏃 Bug Chase Component: Initializing canvas...');
   
   try {
-    // Use setTimeout to ensure DOM is fully rendered
     setTimeout(() => {
       this.initializeCanvasAndGame();
     }, 100);
@@ -141,26 +130,20 @@ ngAfterViewInit() {
     try {
       this.isLoading.set(true);
       
-      // Wait for auth
       await this.authService.waitForAuthInit();
       if (!this.authService.isAuthenticated()) {
         this.router.navigate(['/login']);
         return;
       }
 
-      // Initialize canvas
       this.initializeCanvas();
       
-      // Initialize user stats
       await this.bugChaseService.initializeUserStats();
       
-      // Load dashboard
       await this.loadDashboard();
       
-      // Setup event listeners
       this.setupEventListeners();
       
-      // Start render loop
       this.startRenderLoop();
       
     } catch (error: any) {
@@ -177,7 +160,6 @@ ngAfterViewInit() {
     canvas.width = this.CANVAS_WIDTH;
     canvas.height = this.CANVAS_HEIGHT;
     
-    // Set canvas styles
     canvas.style.border = '2px solid #8b5cf6';
     canvas.style.borderRadius = '12px';
     canvas.style.background = 'linear-gradient(135deg, #1e1e2e 0%, #2d2d44 100%)';
@@ -187,19 +169,15 @@ ngAfterViewInit() {
     cancelAnimationFrame(this.gameLoop);
   }
   
-  // Clean up event listeners
   this.cleanupEventListeners();
 }
 
 private setupEventListeners() {
-  // Clean up first to prevent duplicates
   this.cleanupEventListeners();
   
-  // Add new event listeners
   document.addEventListener('keydown', (e) => this.handleKeyDown(e));
   document.addEventListener('keyup', (e) => this.handleKeyUp(e));
   
-  // Focus canvas for keyboard events
   const canvas = this.canvasRef?.nativeElement;
   if (canvas) {
     canvas.tabIndex = 0;
@@ -266,34 +244,26 @@ private setupEventListeners() {
 
     const now = Date.now();
     
-    // Update player
     this.updatePlayer();
     
-    // Spawn obstacles
     if (now - this.lastObstacleSpawn > 1500 - (state.speed * 20)) {
       this.spawnObstacle();
       this.lastObstacleSpawn = now;
     }
     
-    // Spawn power-ups
     if (now - this.lastPowerUpSpawn > 5000 + Math.random() * 10000) {
       this.spawnPowerUp();
       this.lastPowerUpSpawn = now;
     }
     
-    // Update obstacles
     this.updateObstacles();
     
-    // Update power-ups
     this.updatePowerUps();
     
-    // Update effects
     this.updateEffects();
     
-    // Update game stats
     this.updateGameStats();
     
-    // Increase speed over time
     if (now - this.lastSpeedIncrease > 10000) {
       state.speed = Math.min(state.speed + 0.5, 15);
       this.lastSpeedIncrease = now;
@@ -305,42 +275,33 @@ private setupEventListeners() {
   const state = this.gameState();
   const player = state.player;
   
-  // Apply gravity
   player.speed! += this.GRAVITY;
   
-  // Handle jumping
   if (this.keys.jump && player.y >= this.CANVAS_HEIGHT - this.GROUND_HEIGHT - player.height) {
     player.speed = this.JUMP_FORCE;
     this.keys.jump = false;
   }
   
-  // Update position
   player.y += player.speed!;
   
-  // Ground collision
   const groundY = this.CANVAS_HEIGHT - this.GROUND_HEIGHT - player.height;
   if (player.y >= groundY) {
     player.y = groundY;
     player.speed = 0;
   }
   
-  // Improved ducking mechanics
   if (this.keys.duck && player.y >= groundY) {
-    // Duck more significantly and adjust position
     player.height = this.PLAYER_SIZE * 0.5; // Even lower duck
     player.y = this.CANVAS_HEIGHT - this.GROUND_HEIGHT - player.height; // Adjust position to ground
     player.emoji = '🤸‍♂️';
   } else {
-    // Return to normal size and position
     const oldHeight = player.height;
     player.height = this.PLAYER_SIZE;
     
-    // If we were ducking and now standing up, adjust position smoothly
     if (oldHeight < this.PLAYER_SIZE && player.y >= groundY) {
       player.y = groundY;
     }
     
-    // Change emoji based on state
     if (player.y < groundY - 5) {
       player.emoji = '🦘'; // Jumping emoji
     } else {
@@ -361,23 +322,17 @@ private setupEventListeners() {
   
   const randomType = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
   
-  // Three height levels for obstacles
   const heightType = Math.random();
   let obstacleY: number;
   let obstacleDescription: string;
   
   if (heightType < 0.4) {
-    // Ground level obstacles (40% chance) - normal running
     obstacleY = this.CANVAS_HEIGHT - this.GROUND_HEIGHT - this.OBSTACLE_HEIGHT;
     obstacleDescription = 'ground';
   } else if (heightType < 0.75) {
-    // Middle level obstacles (35% chance) - requires ducking
-    // Positioned so standing player hits them, but ducking player clears them
     obstacleY = this.CANVAS_HEIGHT - this.GROUND_HEIGHT - this.OBSTACLE_HEIGHT - 25;
     obstacleDescription = 'middle';
   } else {
-    // High level obstacles (25% chance) - requires jumping
-    // Positioned higher so player must jump to clear them
     obstacleY = this.CANVAS_HEIGHT - this.GROUND_HEIGHT - this.OBSTACLE_HEIGHT - 80;
     obstacleDescription = 'high';
   }
@@ -393,11 +348,9 @@ private setupEventListeners() {
     speed: state.speed
   };
   
-  // Add obstacle to state
   state.obstacles.push(obstacle);
   this.gameState.set({ ...state });
   
-  // Debug log to help with positioning (remove in production)
   console.log(`Spawned ${obstacleDescription} obstacle at y=${obstacleY}`);
 }
 
@@ -428,13 +381,11 @@ private setupEventListeners() {
   private updateObstacles() {
     const state = this.gameState();
     
-    // Move obstacles
     state.obstacles = state.obstacles.map(obstacle => ({
       ...obstacle,
       x: obstacle.x - obstacle.speed!
     }));
     
-    // Check collisions
     const player = state.player;
     const hasInvincibility = state.effects.some(e => e.type === 'invincible' && e.active);
     
@@ -447,11 +398,9 @@ private setupEventListeners() {
       }
     }
     
-    // Remove obstacles that are off-screen and count avoided
     const initialCount = state.obstacles.length;
     state.obstacles = state.obstacles.filter(obstacle => {
       if (obstacle.x + obstacle.width < 0) {
-        // Count as avoided
         const stats = this.gameStats();
         switch (obstacle.type) {
           case GameObjectType.Bug:
@@ -477,17 +426,14 @@ private setupEventListeners() {
     const state = this.gameState();
     const player = state.player;
     
-    // Move power-ups
     state.powerUps = state.powerUps.map(powerUp => ({
       ...powerUp,
       x: powerUp.x - powerUp.speed!
     }));
     
-    // Check collisions
     const stats = this.gameStats();
     state.powerUps = state.powerUps.filter(powerUp => {
       if (this.checkCollision(player, powerUp)) {
-        // Apply power-up effect
         switch (powerUp.type) {
           case GameObjectType.Coffee:
             this.applySpeedBoost();
@@ -516,7 +462,6 @@ private setupEventListeners() {
       active: now.getTime() - effect.startTime.getTime() < effect.duration
     }));
     
-    // Remove expired effects
     state.effects = state.effects.filter(effect => effect.active);
     
     this.gameState.set({ ...state });
@@ -572,44 +517,30 @@ private setupEventListeners() {
   }
 
 private render() {
-  // FIXED: Use clearRect() to completely clear the canvas (no trails)
   this.ctx.clearRect(0, 0, this.CANVAS_WIDTH, this.CANVAS_HEIGHT);
   
-  // FIXED: Then fill with solid background color
   this.ctx.fillStyle = '#0f0f23'; // Solid background, no transparency
   this.ctx.fillRect(0, 0, this.CANVAS_WIDTH, this.CANVAS_HEIGHT);
   
   const state = this.gameState();
   
-  // FIXED: Draw ground with correct parameters (x, y, width, height)
   this.ctx.fillStyle = '#4a5568';
   this.ctx.fillRect(0, this.CANVAS_HEIGHT - this.GROUND_HEIGHT, this.CANVAS_WIDTH, this.GROUND_HEIGHT);
   
-  // Draw player
   this.drawGameObject(state.player);
   
-  // Draw obstacles
   state.obstacles.forEach(obstacle => this.drawGameObject(obstacle));
   
-  // Draw power-ups
   state.powerUps.forEach(powerUp => this.drawGameObject(powerUp));
   
-  // Draw effects overlay
   this.drawEffects();
   
-  // Draw UI
   this.drawUI();
 }
 
-// FIXED: Updated drawGameObject to show only emojis (no background colors)
 private drawGameObject(obj: GameObject) {
-  // Save the current context state
   this.ctx.save();
   
-  // REMOVED: Background color drawing - now showing only emojis
-  // No more colored rectangles behind obstacles and power-ups
-  
-  // Draw emoji only
   if (obj.emoji) {
     this.ctx.font = `${obj.width * 0.8}px Arial`;
     this.ctx.textAlign = 'center';
@@ -617,11 +548,9 @@ private drawGameObject(obj: GameObject) {
     this.ctx.fillText(obj.emoji, obj.x + obj.width / 2, obj.y + obj.height * 0.8);
   }
   
-  // Restore the context state
   this.ctx.restore();
 }
 
-// OPTIONAL: Update drawEffects to ensure clean overlay rendering
 private drawEffects() {
   const state = this.gameState();
   const hasInvincibility = state.effects.some(e => e.type === 'invincible' && e.active);
@@ -635,12 +564,10 @@ private drawEffects() {
 }
 private ensureGameCanvasInitialized() {
   try {
-    // Check if canvas exists and is properly initialized
     if (!this.canvasRef?.nativeElement || !this.ctx) {
       console.log('🔄 Reinitializing game canvas after tab switch...');
       this.initializeCanvasAndGame();
     } else {
-      // Canvas exists, but make sure it's properly configured
       const canvas = this.canvasRef.nativeElement;
       if (canvas.width !== this.CANVAS_WIDTH || canvas.height !== this.CANVAS_HEIGHT) {
         console.log('🔄 Reconfiguring canvas dimensions...');
@@ -649,7 +576,6 @@ private ensureGameCanvasInitialized() {
     }
   } catch (error) {
     console.error('❌ Error ensuring canvas initialization:', error);
-    // Force full reinitialization
     setTimeout(() => {
       this.initializeCanvasAndGame();
     }, 50);
@@ -665,14 +591,11 @@ private initializeCanvasAndGame() {
       return;
     }
 
-    // Initialize canvas
     this.initializeCanvas();
     
-    // Setup event listeners (clean up old ones first)
     this.cleanupEventListeners();
     this.setupEventListeners();
     
-    // Ensure render loop is running
     if (this.gameLoop) {
       cancelAnimationFrame(this.gameLoop);
     }
@@ -687,14 +610,12 @@ private initializeCanvasAndGame() {
   private drawUI() {
     const state = this.gameState();
     
-    // Draw score
     this.ctx.font = '24px Arial';
     this.ctx.fillStyle = '#ffffff';
     this.ctx.textAlign = 'left';
     this.ctx.fillText(`Score: ${state.score}`, 20, 40);
     this.ctx.fillText(`Distance: ${state.distance}m`, 20, 70);
     
-    // Draw effects
     let effectY = 100;
     state.effects.forEach(effect => {
       if (effect.active) {
@@ -706,7 +627,6 @@ private initializeCanvasAndGame() {
       }
     });
     
-    // Draw instructions
     if (!state.isPlaying) {
       this.ctx.font = '20px Arial';
       this.ctx.textAlign = 'center';
@@ -716,9 +636,7 @@ private initializeCanvasAndGame() {
     }
   }
 
-  // Game control methods
 startGame() {
-  // Ensure canvas is ready before starting
   this.ensureGameCanvasInitialized();
   
   const state = this.gameState();
@@ -727,7 +645,6 @@ startGame() {
     state.startTime = new Date();
     this.gameState.set({ ...state });
     
-    // Focus canvas for keyboard input
     const canvas = this.canvasRef?.nativeElement;
     if (canvas) {
       canvas.focus();
@@ -744,7 +661,6 @@ startGame() {
   }
 
   resetGame() {
-    // Reset game state
     this.gameState.set({
       isPlaying: false,
       isPaused: false,
@@ -767,7 +683,6 @@ startGame() {
       effects: []
     });
     
-    // Reset game stats
     this.gameStats.set({
       bugsAvoided: 0,
       deadlinesAvoided: 0,
@@ -776,12 +691,10 @@ startGame() {
       weekendsCollected: 0
     });
     
-    // Reset UI state
     this.showResult.set(false);
     this.gameResult.set(null);
     this.errorMessage.set(null);
     
-    // Reset timers
     this.lastObstacleSpawn = 0;
     this.lastPowerUpSpawn = 0;
     this.lastSpeedIncrease = 0;
@@ -797,7 +710,6 @@ startGame() {
     state.endTime = new Date();
     this.gameState.set({ ...state });
     
-    // Submit score
     await this.submitScore();
   }
 
@@ -824,7 +736,6 @@ startGame() {
       this.gameResult.set(result);
       this.showResult.set(true);
       
-      // Reload dashboard
       await this.loadDashboard();
       
     } catch (error: any) {
@@ -835,7 +746,6 @@ startGame() {
     }
   }
 
-  // Data loading methods
   private async loadDashboard() {
     try {
       const dashboard = await this.bugChaseService.getDashboard();
@@ -846,14 +756,11 @@ startGame() {
     }
   }
 
-  // UI helper methods
 setActiveTab(tab: 'game' | 'stats' | 'leaderboard') {
   const previousTab = this.activeTab();
   this.activeTab.set(tab);
   
-  // If switching TO the game tab, ensure canvas is properly initialized
   if (tab === 'game' && previousTab !== 'game') {
-    // Use setTimeout to ensure the DOM is updated first
     setTimeout(() => {
       this.ensureGameCanvasInitialized();
     }, 100);
@@ -907,7 +814,6 @@ setActiveTab(tab: 'game' | 'stats' | 'leaderboard') {
   }
 
 private cleanupEventListeners() {
-  // Remove existing event listeners to prevent duplicates
   document.removeEventListener('keydown', this.handleKeyDown);
   document.removeEventListener('keyup', this.handleKeyUp);
 }

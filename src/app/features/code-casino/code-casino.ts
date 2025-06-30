@@ -1,4 +1,3 @@
-// Updated features/code-casino/code-casino.component.ts
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -23,7 +22,7 @@ import {
     CommonModule, 
     FormsModule, 
     NavbarComponent, 
-    CodeHighlightComponent // Add the new code highlighting component
+    CodeHighlightComponent 
   ],
   templateUrl: './code-casino.html',
   styleUrl: './code-casino.css'
@@ -32,7 +31,6 @@ export class CodeCasinoComponent implements OnInit {
   authService = inject(AuthService);
   casinoService = inject(CasinoService);
   
-  // Reactive state
   isLoading = signal<boolean>(false);
   userStats = signal<UserStatsDto | null>(null);
   leaderboard = signal<LeaderboardEntryDto[]>([]);
@@ -40,13 +38,11 @@ export class CodeCasinoComponent implements OnInit {
   dailyChallenge = signal<DailyChallengeDto | null>(null);
   gameResult = signal<GameResultDto | null>(null);
   
-  // UI state
   selectedOption = signal<number | null>(null);
   betAmount = signal<number>(100);
   showResult = signal<boolean>(false);
   activeTab = signal<'challenge' | 'daily' | 'stats' | 'leaderboard'>('challenge');
   
-  // Error handling
   errorMessage = signal<string | null>(null);
   retryAttempts = signal<number>(0);
   maxRetries = 3;
@@ -73,7 +69,6 @@ export class CodeCasinoComponent implements OnInit {
           return;
         }
         
-        // Wait before retry (exponential backoff)
         const delay = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
         console.log(`⏳ Waiting ${delay}ms before retry...`);
         await new Promise(resolve => setTimeout(resolve, delay));
@@ -84,11 +79,9 @@ export class CodeCasinoComponent implements OnInit {
   private async performInitialization() {
     console.log('🎰 Starting casino initialization...');
     
-    // Step 1: Wait for auth to be ready
     console.log('🎰 Step 1: Waiting for auth initialization...');
     await this.authService.waitForAuthInit();
     
-    // Step 2: Verify authentication
     console.log('🎰 Step 2: Checking authentication status...');
     if (!this.authService.isAuthenticated()) {
       throw new Error('User not authenticated. Please login again.');
@@ -96,11 +89,9 @@ export class CodeCasinoComponent implements OnInit {
     
     console.log('🎰 User is authenticated:', this.authService.currentUser());
     
-    // Step 3: Debug authentication on both sides
     console.log('🎰 Step 3: Running authentication debug...');
     await this.debugAuthentication();
     
-    // Step 4: Initialize casino
     console.log('🎰 Step 4: Initializing casino...');
     await this.initializeCasino();
     
@@ -112,7 +103,6 @@ export class CodeCasinoComponent implements OnInit {
       this.isLoading.set(true);
       console.log('🔍 Debugging authentication...');
       
-      // Check auth service status
       const authInfo = {
         isAuthenticated: this.authService.isAuthenticated(),
         currentUser: this.authService.currentUser(),
@@ -120,13 +110,11 @@ export class CodeCasinoComponent implements OnInit {
       };
       console.log('🔍 Auth Service Status:', authInfo);
       
-      // Validate session consistency
       console.log('✅ Authentication debug completed - session is valid');
       
     } catch (error: any) {
       console.error('❌ Debug auth error:', error);
       
-      // If it's a 401, try to re-authenticate
       if (error.message.includes('401') || error.message.includes('Authentication')) {
         console.log('🔄 Attempting to refresh authentication...');
         await this.refreshAuthentication();
@@ -143,7 +131,6 @@ export class CodeCasinoComponent implements OnInit {
     try {
       console.log('🔄 Refreshing authentication...');
       
-      // Get current profile to refresh session
       const profile = await this.authService.getProfile();
       if (!profile) {
         throw new Error('Failed to refresh user profile');
@@ -151,13 +138,11 @@ export class CodeCasinoComponent implements OnInit {
       
       console.log('✅ Authentication refreshed successfully');
       
-      // Small delay to ensure session propagation
       await new Promise(resolve => setTimeout(resolve, 500));
       
     } catch (error) {
       console.error('❌ Failed to refresh authentication:', error);
       
-      // Redirect to login if refresh fails
       this.authService.redirectToLogin();
       throw new Error('Authentication refresh failed. Please login again.');
     }
@@ -172,12 +157,10 @@ export class CodeCasinoComponent implements OnInit {
       console.log('🎰 User authenticated:', this.authService.isAuthenticated());
       console.log('🎰 Current user:', this.authService.currentUser());
 
-      // Try to initialize user stats with retry
       console.log('🎰 Attempting to initialize user stats...');
       await this.initializeWithRetryWrapper(() => this.casinoService.initializeUserStats());
       console.log('✅ User stats initialized successfully');
       
-      // Load dashboard data with retry
       console.log('🎰 Attempting to load dashboard...');
       await this.initializeWithRetryWrapper(() => this.loadDashboard());
       console.log('✅ Dashboard loaded successfully');
@@ -201,12 +184,10 @@ export class CodeCasinoComponent implements OnInit {
         console.error(`Operation attempt ${attempt} failed:`, error);
         
         if (attempt < 3) {
-          // If it's auth error, try refreshing
           if (error.message.includes('Authentication') || error.message.includes('401')) {
             await this.refreshAuthentication();
           }
           
-          // Wait before retry
           await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
         }
       }
@@ -291,7 +272,6 @@ export class CodeCasinoComponent implements OnInit {
       this.gameResult.set(result);
       this.showResult.set(true);
       
-      // Update user stats
       await this.loadUserStats();
       
     } catch (error: any) {
@@ -334,14 +314,12 @@ export class CodeCasinoComponent implements OnInit {
     }
   }
 
-  // Manual retry function for users
   async retryInitialization() {
     this.errorMessage.set(null);
     this.retryAttempts.set(0);
     await this.initializeWithRetry();
   }
 
-  // UI Helper Methods
   setActiveTab(tab: 'challenge' | 'daily' | 'stats' | 'leaderboard') {
     this.activeTab.set(tab);
     this.errorMessage.set(null);

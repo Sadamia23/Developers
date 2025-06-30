@@ -15,7 +15,6 @@ export class DashboardComponent implements OnInit {
   authService = inject(AuthService);
 
   ngOnInit() {
-    // Ensure user profile is loaded
     if (!this.authService.currentUser()) {
       this.authService.getProfile();
     }

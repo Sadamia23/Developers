@@ -1,4 +1,3 @@
-// types/dtos/bug-chase-dtos.ts
 import { ExperienceLevel, TechnologyStack, ZodiacSign } from "../enums/enums";
 
 export interface BugChaseScoreDto {

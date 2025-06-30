@@ -1,4 +1,3 @@
-// services/auth.service.ts
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -18,17 +17,14 @@ export class AuthService {
    private http = inject(HttpClient);
   private router = inject(Router);
 
-  // ⭐ CHANGE THIS TO YOUR ACTUAL API URL
   private readonly API_BASE_URL = 'https://localhost:7276/api/auth';
   
-  // Reactive state
   currentUser = signal<UserProfileDto | null>(null);
   isAuthenticated = signal<boolean>(false);
   isLoading = signal<boolean>(false);
   private authCheckPromise: Promise<void> | null = null;
 
   constructor() {
-    // Check authentication status on service initialization
     this.initializeAuth();
   }
 
@@ -39,18 +35,12 @@ export class AuthService {
     return this.authCheckPromise;
   }
 
-  /**
-   * Wait for auth initialization to complete
-   */
   async waitForAuthInit(): Promise<void> {
     if (this.authCheckPromise) {
       await this.authCheckPromise;
     }
   }
 
-  /**
-   * Register a new user
-   */
   async register(registerDto: RegisterDto): Promise<AuthResponse> {
     console.log('🚀 AuthService: Starting registration...', registerDto);
     
@@ -72,7 +62,6 @@ export class AuthService {
         this.isAuthenticated.set(true);
         console.log('✅ User registered and authenticated');
         
-        // Wait a bit for session to be established
         await new Promise(resolve => setTimeout(resolve, 100));
       }
 
@@ -88,9 +77,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * Login user with username only
-   */
   async login(loginDto: LoginDto): Promise<AuthResponse> {
     console.log('🚀 AuthService: Starting login...', loginDto);
     
@@ -112,7 +98,6 @@ export class AuthService {
         this.isAuthenticated.set(true);
         console.log('✅ User logged in and authenticated');
         
-        // Wait a bit for session to be established
         await new Promise(resolve => setTimeout(resolve, 100));
       }
 
@@ -128,9 +113,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * Get current user profile
-   */
   async getProfile(): Promise<UserProfileDto | null> {
     console.log('🚀 AuthService: Getting profile...');
     
@@ -155,9 +137,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * Logout current user
-   */
   async logout(): Promise<void> {
     console.log('🚀 AuthService: Logging out...');
     
@@ -173,7 +152,6 @@ export class AuthService {
     } catch (error) {
       console.error('❌ Logout error:', error);
     } finally {
-      // Clear local state regardless of API call success
       this.currentUser.set(null);
       this.isAuthenticated.set(false);
       this.authCheckPromise = null;
@@ -181,9 +159,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * Check authentication status
-   */
   async checkAuthStatus(): Promise<void> {
     console.log('🚀 AuthService: Checking auth status...');
     
@@ -200,7 +175,6 @@ export class AuthService {
       this.isAuthenticated.set(response.isAuthenticated);
       
       if (response.isAuthenticated) {
-        // If authenticated, fetch full profile
         await this.getProfile();
       } else {
         this.currentUser.set(null);
@@ -212,33 +186,22 @@ export class AuthService {
     }
   }
 
-  /**
-   * Navigate to login page
-   */
   redirectToLogin(): void {
     this.router.navigate(['/login']);
   }
 
-  /**
-   * Navigate to profile page
-   */
   redirectToProfile(): void {
     this.router.navigate(['/profile']);
   }
 
-  /**
-   * Handle HTTP errors
-   */
   private handleError = (error: HttpErrorResponse) => {
     console.error('🔥 HTTP Error:', error);
     
     let errorMessage = 'An unexpected error occurred';
     
     if (error.error instanceof ErrorEvent) {
-      // Client-side error
       errorMessage = `Client Error: ${error.error.message}`;
     } else {
-      // Server-side error
       if (error.status === 0) {
         errorMessage = 'Unable to connect to server. Please check if the server is running and CORS is configured.';
       } else if (error.error?.message) {

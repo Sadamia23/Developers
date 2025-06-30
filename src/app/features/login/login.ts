@@ -1,4 +1,3 @@
-// login.component.ts
 import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -30,10 +29,8 @@ private fb = inject(FormBuilder);
   }
 
   async ngOnInit() {
-    // Wait for auth initialization to complete
     await this.authService.waitForAuthInit();
     
-    // Check if user is already authenticated
     if (this.authService.isAuthenticated()) {
       console.log('User already authenticated, redirecting to profile...');
       await this.router.navigate(['/profile']);

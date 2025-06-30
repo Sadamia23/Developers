@@ -1,4 +1,3 @@
-// services/meeting-excuse.service.ts
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom, catchError, throwError } from 'rxjs';
@@ -24,10 +23,8 @@ import {
 export class MeetingExcuseService {
   private http = inject(HttpClient);
   
-  // Update this to match your API URL
   private readonly API_BASE_URL = 'https://localhost:7276/api/MeetingExcuse';
   
-  // Reactive state
   currentExcuse = signal<MeetingExcuseDto | null>(null);
   userStats = signal<MeetingExcuseStatsDto | null>(null);
   dashboard = signal<MeetingExcuseDashboardDto | null>(null);
@@ -39,9 +36,6 @@ export class MeetingExcuseService {
     this.initializeUserStats();
   }
 
-  /**
-   * Initialize user stats when service is created
-   */
   private async initializeUserStats(): Promise<void> {
     try {
       await this.initialize();
@@ -50,9 +44,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Get dashboard data
-   */
   async getDashboard(): Promise<MeetingExcuseDashboardDto> {
     try {
       this.isLoading.set(true);
@@ -76,9 +67,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Generate a random excuse
-   */
   async generateExcuse(criteria?: GenerateExcuseRequestDto): Promise<MeetingExcuseDto> {
     try {
       this.isLoading.set(true);
@@ -101,9 +89,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Generate multiple excuses
-   */
   async generateBulkExcuses(request: BulkExcuseGenerationDto): Promise<MeetingExcuseDto[]> {
     try {
       this.isLoading.set(true);
@@ -125,9 +110,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Generate AI-powered excuse
-   */
   async generateAIExcuse(criteria?: GenerateExcuseRequestDto): Promise<MeetingExcuseDto> {
     try {
       this.isLoading.set(true);
@@ -150,9 +132,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Generate personalized AI excuse
-   */
   async generatePersonalizedAIExcuse(criteria?: GenerateExcuseRequestDto): Promise<MeetingExcuseDto> {
     try {
       this.isLoading.set(true);
@@ -175,9 +154,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Generate smart excuse (AI or database based)
-   */
   async generateSmartExcuse(request: AIExcuseGenerationDto): Promise<MeetingExcuseDto> {
     try {
       this.isLoading.set(true);
@@ -200,9 +176,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Get excuse of the day
-   */
   async getExcuseOfTheDay(): Promise<MeetingExcuseDto | null> {
     try {
       const response = await firstValueFrom(
@@ -220,9 +193,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Save excuse as favorite
-   */
   async saveFavorite(request: SaveFavoriteRequestDto): Promise<MeetingExcuseFavoriteDto> {
     try {
       const response = await firstValueFrom(
@@ -233,7 +203,6 @@ export class MeetingExcuseService {
         )
       );
       
-      // Update favorites list
       const currentFavorites = this.favorites();
       this.favorites.set([response, ...currentFavorites]);
       
@@ -244,9 +213,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Remove favorite
-   */
   async removeFavorite(favoriteId: number): Promise<void> {
     try {
       await firstValueFrom(
@@ -257,7 +223,6 @@ export class MeetingExcuseService {
         )
       );
       
-      // Update favorites list
       const currentFavorites = this.favorites();
       this.favorites.set(currentFavorites.filter(f => f.id !== favoriteId));
     } catch (error: any) {
@@ -266,9 +231,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Get user favorites
-   */
   async getFavorites(limit: number = 20): Promise<MeetingExcuseFavoriteDto[]> {
     try {
       const response = await firstValueFrom(
@@ -287,9 +249,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Submit usage feedback
-   */
   async submitUsage(request: SubmitUsageRequestDto): Promise<MeetingExcuseUsageDto> {
     try {
       const response = await firstValueFrom(
@@ -307,9 +266,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Get usage history
-   */
   async getUsageHistory(limit: number = 20): Promise<MeetingExcuseUsageDto[]> {
     try {
       const response = await firstValueFrom(
@@ -328,9 +284,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Rate an excuse
-   */
   async rateExcuse(request: RateExcuseRequestDto): Promise<void> {
     try {
       await firstValueFrom(
@@ -346,9 +299,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Get user stats
-   */
   async getUserStats(): Promise<MeetingExcuseStatsDto> {
     try {
       const response = await firstValueFrom(
@@ -367,9 +317,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Get leaderboard
-   */
   async getLeaderboard(limit: number = 10): Promise<MeetingExcuseLeaderboardEntryDto[]> {
     try {
       const response = await firstValueFrom(
@@ -387,9 +334,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Get trending excuses
-   */
   async getTrendingExcuses(limit: number = 10): Promise<MeetingExcuseDto[]> {
     try {
       const response = await firstValueFrom(
@@ -407,9 +351,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Get top rated excuses
-   */
   async getTopRatedExcuses(limit: number = 10): Promise<MeetingExcuseDto[]> {
     try {
       const response = await firstValueFrom(
@@ -427,9 +368,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Get analytics
-   */
   async getAnalytics(): Promise<ExcuseAnalyticsDto> {
     try {
       const response = await firstValueFrom(
@@ -447,9 +385,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Get available tags
-   */
   async getAvailableTags(): Promise<string[]> {
     try {
       const response = await firstValueFrom(
@@ -467,9 +402,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Initialize user stats
-   */
   async initialize(): Promise<void> {
     try {
       await firstValueFrom(
@@ -485,9 +417,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Get AI status
-   */
   async getAIStatus(): Promise<any> {
     try {
       const response = await firstValueFrom(
@@ -505,9 +434,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Get AI samples
-   */
   async getAISamples(): Promise<any[]> {
     try {
       const response = await firstValueFrom(
@@ -525,9 +451,6 @@ export class MeetingExcuseService {
     }
   }
 
-  /**
-   * Handle HTTP errors
-   */
   private handleError = (error: HttpErrorResponse) => {
     console.error('Meeting Excuse Service Error:', error);
     

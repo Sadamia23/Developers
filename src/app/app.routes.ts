@@ -54,14 +54,12 @@ export const routes: Routes = [
   },
   {
     path: 'code-analyzer',
-    // loadComponent: () => import('./components/code-analyzer.component').then(m => m.CodeAnalyzerComponent),
     loadComponent: () => import('./features/profile/profile').then(m => m.ProfileComponent),
     canActivate: [authGuard],
     title: 'Code Analyzer 🔍 - DevLife'
   },
   {
     path: 'dev-dating',
-    // loadComponent: () => import('./components/dev-dating.component').then(m => m.DevDatingComponent),
     loadComponent: () => import('./features/profile/profile').then(m => m.ProfileComponent),
     canActivate: [authGuard],
     title: 'Dev Dating Room 💑 - DevLife'
