@@ -9,15 +9,16 @@ import {
   UserProfileDto, 
   AuthStatus 
 } from '../types/dtos/dtos';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-   private http = inject(HttpClient);
+  private http = inject(HttpClient);
   private router = inject(Router);
 
-  private readonly API_BASE_URL = 'https://localhost:7276/api/auth';
+  private readonly API_BASE_URL = environment.apiUrl + '/auth';
   
   currentUser = signal<UserProfileDto | null>(null);
   isAuthenticated = signal<boolean>(false);

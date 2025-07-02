@@ -22,10 +22,9 @@
 .bug-chase-title {
   font-size: 3rem;
   font-weight: 700;
-  background: linear-gradient(135deg, #22c55e 0%, #10b981 50%, #059669 100%);
+  color: white;
   background-clip: text;
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
   margin: 0 0 0.5rem 0;
   letter-spacing: -0.025em;
 }

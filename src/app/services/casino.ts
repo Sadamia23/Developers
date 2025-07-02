@@ -10,6 +10,7 @@ import {
   DailyChallengeDto, 
   CasinoStatsResponse 
 } from '../types/dtos/casino-dtos';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +18,7 @@ import {
 export class CasinoService {
   private http = inject(HttpClient);
 
-  private readonly API_BASE_URL = 'https://localhost:7276/api/codecasino';
+  private readonly API_BASE_URL = environment.apiUrl + '/codecasino';
 
   private getHttpOptions() {
     return {

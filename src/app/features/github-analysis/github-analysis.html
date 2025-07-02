@@ -1,0 +1,492 @@
+ <app-navbar></app-navbar>
+
+    <div class="github-analysis-container">
+      <div class="analysis-content">
+        
+        <!-- Header Section -->
+        <div class="header-section">
+          <div class="header-card">
+            <div class="header-icon">🔍</div>
+            <h1 class="header-title">GitHub Code Analyzer</h1>
+            <p class="header-subtitle">
+              Discover your developer personality through AI analysis of your GitHub repositories
+            </p>
+            
+            <!-- Navigation Pills -->
+            <div class="nav-pills">
+              <button 
+                class="nav-pill"
+                [class.active]="currentStep() === 'auth'"
+                (click)="goToStep('auth')"
+                [disabled]="isLoading()"
+              >
+                🔐 Authenticate
+              </button>
+              <button 
+                class="nav-pill"
+                [class.active]="currentStep() === 'form'"
+                [class.disabled]="!githubAuthStatus().isAuthenticated"
+                (click)="githubAuthStatus().isAuthenticated && goToStep('form')"
+                [disabled]="isLoading() || !githubAuthStatus().isAuthenticated"
+              >
+                ⚙️ Configure
+              </button>
+              <button 
+                class="nav-pill"
+                [class.active]="currentStep() === 'results'"
+                [class.disabled]="!currentAnalysis()"
+                (click)="currentAnalysis() && goToStep('results')"
+                [disabled]="isLoading() || !currentAnalysis()"
+              >
+                📊 Results
+              </button>
+              <button 
+                class="nav-pill"
+                [class.active]="currentStep() === 'history'"
+                (click)="goToStep('history')"
+                [disabled]="isLoading()"
+              >
+                📜 History
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div class="messages-section" *ngIf="error() || success()">
+          <div class="error-message" *ngIf="error()">
+            <div class="message-icon">❌</div>
+            <div class="message-text">{{ error() }}</div>
+            <button class="message-close" (click)="clearMessages()">×</button>
+          </div>
+          
+          <div class="success-message" *ngIf="success()">
+            <div class="message-icon">✅</div>
+            <div class="message-text">{{ success() }}</div>
+            <button class="message-close" (click)="clearMessages()">×</button>
+          </div>
+        </div>
+
+        <!-- Authentication Step -->
+        <div class="step-content" *ngIf="currentStep() === 'auth'">
+          <div class="auth-card">
+            <div class="auth-status">
+              <div class="status-indicator" [class.authenticated]="githubAuthStatus().isAuthenticated">
+                <div class="status-icon">
+                  {{ githubAuthStatus().isAuthenticated ? '✅' : '🔐' }}
+                </div>
+                <div class="status-content">
+                  <h3 class="status-title">
+                    {{ githubAuthStatus().isAuthenticated ? 'GitHub Connected' : 'GitHub Authentication Required' }}
+                  </h3>
+                  <p class="status-message">{{ githubAuthStatus().message }}</p>
+                  
+                  <div class="github-user-info" *ngIf="githubAuthStatus().isAuthenticated && githubAuthStatus().githubUsername">
+                    <img 
+                      [src]="githubAuthStatus().avatarUrl" 
+                      [alt]="githubAuthStatus().githubUsername"
+                      class="github-avatar"
+                      *ngIf="githubAuthStatus().avatarUrl"
+                    >
+                    <span class="github-username">&#64;{{ githubAuthStatus().githubUsername }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="auth-actions">
+              <button 
+                class="auth-button primary"
+                *ngIf="!githubAuthStatus().isAuthenticated"
+                (click)="authenticateWithGitHub()"
+                [disabled]="isLoading()"
+              >
+                <span *ngIf="!isLoading()">🔗 Connect with GitHub</span>
+                <span *ngIf="isLoading()" class="loading">🔄 Connecting...</span>
+              </button>
+
+              <div class="authenticated-actions" *ngIf="githubAuthStatus().isAuthenticated">
+                <button 
+                  class="auth-button success"
+                  (click)="goToStep('form')"
+                >
+                  ▶️ Start Analysis
+                </button>
+                <button 
+                  class="auth-button secondary"
+                  (click)="logoutFromGitHub()"
+                  [disabled]="isLoading()"
+                >
+                  🚪 Disconnect
+                </button>
+              </div>
+            </div>
+
+            <div class="auth-info">
+              <h4>Why do we need GitHub access?</h4>
+              <ul>
+                <li>📝 Analyze your commit message patterns</li>
+                <li>🏗️ Evaluate your project structure</li>
+                <li>💬 Review your code commenting style</li>
+                <li>🏷️ Check your variable naming conventions</li>
+              </ul>
+              <p class="privacy-note">
+                🔒 We only read your public repositories and basic profile information. 
+                No private data is stored permanently.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analysis Form Step -->
+        <div class="step-content" *ngIf="currentStep() === 'form'">
+          <div class="form-card">
+            <h2 class="form-title">Configure Your Analysis</h2>
+            
+            <form class="analysis-form" (ngSubmit)="startAnalysis()">
+              <div class="form-group">
+                <label for="githubUsername" class="form-label">
+                  GitHub Username
+                  <span class="required">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="githubUsername"
+                  class="form-input"
+                  [value]="analysisForm().gitHubUsername"
+                  (input)="onUsernameChange($event)"
+                  placeholder="Enter GitHub username to analyze"
+                  required
+                >
+                <small class="form-hint">
+                  This can be your own username or any public GitHub user
+                </small>
+              </div>
+
+              <div class="form-group">
+                <label for="maxRepositories" class="form-label">
+                  Maximum Repositories to Analyze
+                </label>
+                <select
+                  id="maxRepositories"
+                  class="form-select"
+                  [value]="analysisForm().maxRepositories"
+                  (change)="onMaxReposChange($event)"
+                >
+                  <option value="3">3 repositories (Fast)</option>
+                  <option value="5">5 repositories (Recommended)</option>
+                  <option value="10">10 repositories (Detailed)</option>
+                </select>
+              </div>
+
+              <!-- Advanced Options -->
+              <div class="advanced-options">
+                <button
+                  type="button"
+                  class="toggle-advanced"
+                  (click)="toggleAdvancedOptions()"
+                >
+                  <span>⚙️ Advanced Options</span>
+                  <span class="toggle-icon" [class.rotated]="showAdvancedOptions()">▼</span>
+                </button>
+
+                <div class="advanced-content" *ngIf="showAdvancedOptions()">
+                  <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                      <input
+                        type="checkbox"
+                        [checked]="analysisForm().includeForkedRepos"
+                        (change)="onIncludeForkedChange($event)"
+                      >
+                      <span class="checkbox-text">Include forked repositories</span>
+                    </label>
+                    <small class="form-hint">
+                      Analyze repositories that were forked from other projects
+                    </small>
+                  </div>
+
+                  <div class="form-group checkbox-group">
+                    <label class="checkbox-label">
+                      <input
+                        type="checkbox"
+                        [checked]="analysisForm().analyzePrivateRepos"
+                        (change)="onAnalyzePrivateChange($event)"
+                      >
+                      <span class="checkbox-text">Include private repositories</span>
+                    </label>
+                    <small class="form-hint">
+                      Requires additional permissions - only works with your own account
+                    </small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button
+                  type="submit"
+                  class="start-analysis-button"
+                  [disabled]="!canStartAnalysis() || isLoading()"
+                >
+                  <span *ngIf="!isLoading()">🚀 Start Analysis</span>
+                  <span *ngIf="isLoading()" class="loading">🔄 Starting...</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Analyzing Step -->
+        <div class="step-content" *ngIf="currentStep() === 'analyzing'">
+          <div class="analyzing-card">
+            <div class="analyzing-header">
+              <div class="analyzing-icon">🔍</div>
+              <h2 class="analyzing-title">Analyzing Your Code...</h2>
+              <p class="analyzing-subtitle">
+                AI is examining your repositories to discover your developer personality
+              </p>
+            </div>
+
+            <div class="progress-section">
+              <div class="progress-bar">
+                <div 
+                  class="progress-fill" 
+                  [style.width.%]="analysisProgress()"
+                ></div>
+              </div>
+              <div class="progress-text">{{ analysisProgress().toFixed(0) }}%</div>
+            </div>
+
+            <div class="analyzing-steps">
+              <div class="analyzing-step" [class.active]="analysisProgress() >= 20">
+                <div class="step-icon">📊</div>
+                <div class="step-text">Fetching repositories...</div>
+              </div>
+              <div class="analyzing-step" [class.active]="analysisProgress() >= 40">
+                <div class="step-icon">💬</div>
+                <div class="step-text">Analyzing commit messages...</div>
+              </div>
+              <div class="analyzing-step" [class.active]="analysisProgress() >= 60">
+                <div class="step-icon">🏗️</div>
+                <div class="step-text">Evaluating project structure...</div>
+              </div>
+              <div class="analyzing-step" [class.active]="analysisProgress() >= 80">
+                <div class="step-icon">🤖</div>
+                <div class="step-text">Generating personality insights...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results Step -->
+        <div class="step-content" *ngIf="currentStep() === 'results' && currentAnalysis()">
+          <div class="results-container">
+            
+            <!-- Personality Card -->
+            <div class="personality-card">
+              <div class="personality-header">
+                <div class="personality-emoji">{{ getPersonalityEmoji(currentAnalysis()!.personalityType) }}</div>
+                <h2 class="personality-type">{{ currentAnalysis()!.personalityType }}</h2>
+                <p class="personality-description">{{ currentAnalysis()!.personalityDescription }}</p>
+              </div>
+
+              <div class="personality-actions">
+                <button 
+                  class="action-button favorite"
+                  (click)="toggleFavorite(currentAnalysis()!.id)"
+                >
+                  ❤️ Save
+                </button>
+                <button 
+                  class="action-button share"
+                  (click)="copyShareLink(currentAnalysis()!)"
+                >
+                  📋 Copy Link
+                </button>
+                <button 
+                  class="action-button share"
+                  (click)="shareAnalysis(currentAnalysis()!, 'twitter')"
+                >
+                  🐦 Tweet
+                </button>
+              </div>
+            </div>
+
+            <!-- Scores Grid -->
+            <div class="scores-section">
+              <h3 class="section-title">Your Coding Scores</h3>
+              <div class="scores-grid">
+                <div class="score-card" [class]="getScoreColor(currentAnalysis()!.scores.commitMessageQuality)">
+                  <div class="score-icon">💬</div>
+                  <div class="score-content">
+                    <div class="score-value">{{ currentAnalysis()!.scores.commitMessageQuality }}</div>
+                    <div class="score-label">Commit Messages</div>
+                    <div class="score-rating">{{ getScoreLabel(currentAnalysis()!.scores.commitMessageQuality) }}</div>
+                  </div>
+                </div>
+
+                <div class="score-card" [class]="getScoreColor(currentAnalysis()!.scores.codeCommentingScore)">
+                  <div class="score-icon">📝</div>
+                  <div class="score-content">
+                    <div class="score-value">{{ currentAnalysis()!.scores.codeCommentingScore }}</div>
+                    <div class="score-label">Code Comments</div>
+                    <div class="score-rating">{{ getScoreLabel(currentAnalysis()!.scores.codeCommentingScore) }}</div>
+                  </div>
+                </div>
+
+                <div class="score-card" [class]="getScoreColor(currentAnalysis()!.scores.variableNamingScore)">
+                  <div class="score-icon">🏷️</div>
+                  <div class="score-content">
+                    <div class="score-value">{{ currentAnalysis()!.scores.variableNamingScore }}</div>
+                    <div class="score-label">Variable Naming</div>
+                    <div class="score-rating">{{ getScoreLabel(currentAnalysis()!.scores.variableNamingScore) }}</div>
+                  </div>
+                </div>
+
+                <div class="score-card" [class]="getScoreColor(currentAnalysis()!.scores.projectStructureScore)">
+                  <div class="score-icon">🏗️</div>
+                  <div class="score-content">
+                    <div class="score-value">{{ currentAnalysis()!.scores.projectStructureScore }}</div>
+                    <div class="score-label">Project Structure</div>
+                    <div class="score-rating">{{ getScoreLabel(currentAnalysis()!.scores.projectStructureScore) }}</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="overall-score">
+                <div class="overall-label">Overall Score</div>
+                <div class="overall-value" [class]="getScoreColor(currentAnalysis()!.scores.overallScore)">
+                  {{ currentAnalysis()!.scores.overallScore }}/100
+                </div>
+              </div>
+            </div>
+
+            <!-- Strengths & Weaknesses -->
+            <div class="insights-section">
+              <div class="insights-grid">
+                <div class="insight-card strengths">
+                  <h4 class="insight-title">💪 Strengths</h4>
+                  <ul class="insight-list">
+                    <li *ngFor="let strength of currentAnalysis()!.strengths">{{ strength }}</li>
+                  </ul>
+                </div>
+
+                <div class="insight-card weaknesses">
+                  <h4 class="insight-title">🎯 Areas for Improvement</h4>
+                  <ul class="insight-list">
+                    <li *ngFor="let weakness of currentAnalysis()!.weaknesses">{{ weakness }}</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Celebrity Developers -->
+            <div class="celebrities-section">
+              <h3 class="section-title">You Code Like These Developers</h3>
+              <div class="celebrities-grid">
+                <div 
+                  class="celebrity-card" 
+                  *ngFor="let celebrity of currentAnalysis()!.celebrityDevelopers"
+                >
+                  <div class="celebrity-header">
+                    <div class="celebrity-avatar">
+                      {{ getCelebrityInitials(celebrity.name) }}
+                    </div>
+                    <div class="celebrity-info">
+                      <h5 class="celebrity-name">{{ celebrity.name }}</h5>
+                      <p class="celebrity-description">{{ celebrity.description }}</p>
+                      <a 
+                        [href]="'https://github.com/' + celebrity.gitHubUsername" 
+                        target="_blank" 
+                        class="celebrity-github"
+                      >
+                        &#64;{{ celebrity.gitHubUsername }}
+                      </a>
+                    </div>
+                  </div>
+                  <p class="celebrity-reason">{{ celebrity.reason }}</p>
+                  <div class="similarity-score">
+                    <div class="similarity-label">Similarity</div>
+                    <div class="similarity-value">{{ celebrity.similarityScore }}%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Repositories Analyzed -->
+            <div class="repositories-section">
+              <h3 class="section-title">Repositories Analyzed</h3>
+              <div class="repositories-grid">
+                <div 
+                  class="repository-card" 
+                  *ngFor="let repo of currentAnalysis()!.repositoriesAnalyzed"
+                >
+                  <div class="repo-header">
+                    <div class="repo-icon">📁</div>
+                    <div class="repo-info">
+                      <h5 class="repo-name">{{ repo.name }}</h5>
+                      <p class="repo-description">{{ repo.description || 'No description' }}</p>
+                    </div>
+                  </div>
+                  <div class="repo-stats">
+                    <div class="repo-stat">
+                      <span class="stat-icon">⭐</span>
+                      <span class="stat-value">{{ repo.starsCount }}</span>
+                    </div>
+                    <div class="repo-stat">
+                      <span class="stat-icon">💻</span>
+                      <span class="stat-value">{{ repo.primaryLanguage }}</span>
+                    </div>
+                    <div class="repo-stat">
+                      <span class="stat-icon">📝</span>
+                      <span class="stat-value">{{ repo.commitsAnalyzed }} commits</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- History Step -->
+        <div class="step-content" *ngIf="currentStep() === 'history'">
+          <div class="history-card">
+            <h2 class="history-title">Analysis History</h2>
+            
+            <div class="history-list" *ngIf="analysisHistory().length > 0">
+              <div 
+                class="history-item" 
+                *ngFor="let analysis of analysisHistory()"
+                (click)="currentAnalysis.set(analysis); goToStep('results')"
+              >
+                <div class="history-header">
+                  <div class="history-emoji">{{ getPersonalityEmoji(analysis.personalityType) }}</div>
+                  <div class="history-info">
+                    <h4 class="history-personality">{{ analysis.personalityType }}</h4>
+                    <p class="history-date">{{ formatDate(analysis.analyzedAt) }}</p>
+                  </div>
+                  <div class="history-score" [class]="getScoreColor(analysis.scores.overallScore)">
+                    {{ analysis.scores.overallScore }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="empty-history" *ngIf="analysisHistory().length === 0">
+              <div class="empty-icon">📊</div>
+              <h3 class="empty-title">No Analysis History</h3>
+              <p class="empty-message">
+                Start your first analysis to see your developer personality insights!
+              </p>
+              <button 
+                class="empty-action"
+                (click)="goToStep('auth')"
+              >
+                🚀 Start First Analysis
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>

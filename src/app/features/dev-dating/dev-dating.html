@@ -1,0 +1,380 @@
+<!-- features/dev-dating/dev-dating.component.html -->
+<app-navbar></app-navbar>
+
+<div class="dating-container">
+  <div class="dating-content">
+    <!-- Header -->
+    <div class="dating-header">
+      <h1 class="dating-title">💑 Dev Dating Room</h1>
+      <p class="dating-subtitle">Find your coding soulmate!</p>
+    </div>
+
+    <!-- Error Message -->
+    @if (errorMessage()) {
+      <div class="error-message" (click)="clearError()">
+        <span>❌ {{ errorMessage() }}</span>
+        <button class="close-error">×</button>
+      </div>
+    }
+
+    <!-- Loading Spinner -->
+    @if (isLoading()) {
+      <div class="loading-spinner">
+        <div class="spinner"></div>
+        <p>Loading...</p>
+      </div>
+    }
+
+    <!-- Swipe Result Notification -->
+    @if (showSwipeResult() && swipeResult()) {
+      <div class="swipe-result" [class.match]="swipeResult()!.isMatch" [class.no-match]="!swipeResult()!.isMatch">
+        <div class="swipe-result-content">
+          @if (swipeResult()!.isMatch) {
+            <div class="match-celebration">
+              <h2>🎉 It's a Match! 🎉</h2>
+              <p>{{ swipeResult()!.message }}</p>
+            </div>
+          } @else {
+            <div class="no-match-message">
+              <h3>{{ swipeResult()!.message }}</h3>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+      @if (!hasProfile()) {
+        <button 
+          class="tab-button active"
+          [class.active]="activeTab() === 'setup'"
+          (click)="setActiveTab('setup')"
+        >
+          ⚙️ Setup Profile
+        </button>
+      } @else {
+        <button 
+          class="tab-button"
+          [class.active]="activeTab() === 'swipe'"
+          (click)="setActiveTab('swipe')"
+        >
+          💕 Discover
+        </button>
+        <button 
+          class="tab-button"
+          [class.active]="activeTab() === 'matches'"
+          (click)="setActiveTab('matches')"
+        >
+          🔥 Matches
+        </button>
+        <button 
+          class="tab-button"
+          [class.active]="activeTab() === 'chat'"
+          (click)="setActiveTab('chat')"
+          [disabled]="!activeChatMatch()"
+        >
+          💬 Chat
+        </button>
+      }
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      
+      <!-- Setup Profile Tab -->
+      @if (activeTab() === 'setup') {
+        <div class="tab-pane">
+          <div class="setup-section">
+            <div class="setup-content">
+              <h2>💫 Create Your Developer Profile</h2>
+              <p class="setup-description">
+                Let's set up your dating profile to find your perfect coding partner!
+              </p>
+
+              <div class="setup-form">
+                <!-- Gender Selection -->
+                <div class="form-group">
+                  <label class="form-label">Your Gender</label>
+                  <div class="gender-options">
+                    <button 
+                      class="gender-option"
+                      [class.selected]="selectedGender() === Gender.Male"
+                      (click)="setGender(Gender.Male)"
+                    >
+                      👨 Male
+                    </button>
+                    <button 
+                      class="gender-option"
+                      [class.selected]="selectedGender() === Gender.Female"
+                      (click)="setGender(Gender.Female)"
+                    >
+                      👩 Female
+                    </button>
+                    <button 
+                      class="gender-option"
+                      [class.selected]="selectedGender() === Gender.NonBinary"
+                      (click)="setGender(Gender.NonBinary)"
+                    >
+                      🧑 Non-Binary
+                    </button>
+                    <button 
+                      class="gender-option"
+                      [class.selected]="selectedGender() === Gender.Other"
+                      (click)="setGender(Gender.Other)"
+                    >
+                      👤 Other
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Preference Selection -->
+                <div class="form-group">
+                  <label class="form-label">Looking For</label>
+                  <div class="gender-options">
+                    <button 
+                      class="gender-option"
+                      [class.selected]="selectedPreference() === Gender.Male"
+                      (click)="setPreference(Gender.Male)"
+                    >
+                      👨 Male
+                    </button>
+                    <button 
+                      class="gender-option"
+                      [class.selected]="selectedPreference() === Gender.Female"
+                      (click)="setPreference(Gender.Female)"
+                    >
+                      👩 Female
+                    </button>
+                    <button 
+                      class="gender-option"
+                      [class.selected]="selectedPreference() === Gender.NonBinary"
+                      (click)="setPreference(Gender.NonBinary)"
+                    >
+                      🧑 Non-Binary
+                    </button>
+                    <button 
+                      class="gender-option"
+                      [class.selected]="selectedPreference() === Gender.Other"
+                      (click)="setPreference(Gender.Other)"
+                    >
+                      👤 Other
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Bio -->
+                <div class="form-group">
+                  <label class="form-label" for="userBio">Your Bio</label>
+                  <textarea
+                    id="userBio"
+                    [value]="userBio()"
+                    (input)="userBio.set($any($event.target).value)"
+                    placeholder="Tell potential matches about yourself... What do you love about coding? What are your interests? What kind of developer are you looking for?"
+                    class="bio-textarea"
+                    rows="6"
+                    maxlength="500"
+                  ></textarea>
+                  <div class="char-counter">
+                    {{ userBio().length }}/500 characters
+                  </div>
+                </div>
+
+                <!-- Setup Button -->
+                <div class="setup-actions">
+                  <button 
+                    class="setup-btn"
+                    (click)="setupProfile()"
+                    [disabled]="isLoading() || userBio().trim().length < 10"
+                  >
+                    💕 Create Profile & Start Dating
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Discover/Swipe Tab -->
+      @if (activeTab() === 'swipe') {
+        <div class="tab-pane">
+          <div class="swipe-section">
+            @if (currentMatch()) {
+              <div class="match-card">
+                <div class="match-header">
+                  <h2>{{ currentMatch()!.firstName }}, {{ currentMatch()!.age }}</h2>
+                  <div class="match-username">{{ currentMatch()!.username }}</div>
+                </div>
+
+                <div class="match-info">
+                  <div class="match-tags">
+                    <span class="tech-tag">
+                      {{ getTechStackEmoji(currentMatch()!.techStack) }} {{ currentMatch()!.techStack }}
+                    </span>
+                    <span class="experience-tag">
+                      {{ getExperienceEmoji(currentMatch()!.experience) }} {{ currentMatch()!.experience }}
+                    </span>
+                    <span class="zodiac-tag">
+                      {{ getZodiacEmoji(currentMatch()!.zodiacSign) }} {{ currentMatch()!.zodiacSign }}
+                    </span>
+                  </div>
+
+                  <div class="match-bio">
+                    <h4>About {{ currentMatch()!.firstName }}</h4>
+                    <p>{{ currentMatch()!.bio }}</p>
+                  </div>
+                </div>
+
+                <div class="swipe-actions">
+                  <button 
+                    class="swipe-btn pass"
+                    (click)="swipe(false)"
+                    [disabled]="isLoading()"
+                    title="Pass"
+                  >
+                    👎 Pass
+                  </button>
+                  <button 
+                    class="swipe-btn like"
+                    (click)="swipe(true)"
+                    [disabled]="isLoading()"
+                    title="Like"
+                  >
+                    💗 Like
+                  </button>
+                </div>
+              </div>
+            } @else {
+              <!-- No More Matches -->
+              <div class="no-matches">
+                <div class="no-matches-content">
+                  <h3>🎯 No more potential matches!</h3>
+                  <p>We'll find more compatible developers for you soon. Check back later!</p>
+                  <button class="refresh-btn" (click)="loadPotentialMatches()">
+                    🔄 Refresh
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Matches Tab -->
+      @if (activeTab() === 'matches') {
+        <div class="tab-pane">
+          <div class="matches-section">
+            <h2>🔥 Your Matches</h2>
+            
+            @if (matches().length > 0) {
+              <div class="matches-list">
+                @for (match of matches(); track match.id) {
+                  <div 
+                    class="match-item"
+                    (click)="openChat(match)"
+                  >
+                    <div class="match-item-header">
+                      <h4>{{ match.otherUser.firstName }} {{ match.otherUser.lastName }}</h4>
+                      <span class="match-date">{{ formatDate(match.matchedAt) }}</span>
+                    </div>
+                    <div class="match-item-info">
+                      <span class="tech-tag">
+                        {{ getTechStackEmoji(match.otherUser.techStack.toString()) }} {{ match.otherUser.techStack }}
+                      </span>
+                      <span class="experience-tag">
+                        {{ getExperienceEmoji(match.otherUser.experience.toString()) }} {{ match.otherUser.experience }}
+                      </span>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="no-matches">
+                <h3>💔 No matches yet!</h3>
+                <p>Keep swiping to find your perfect coding partner.</p>
+                <button class="start-btn" (click)="setActiveTab('swipe')">
+                  💕 Start Swiping
+                </button>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Chat Tab -->
+      @if (activeTab() === 'chat' && activeChatMatch()) {
+        <div class="tab-pane">
+          <div class="chat-section">
+            <!-- Chat Header -->
+            <div class="chat-header">
+              <h2>💬 Chat with {{ activeChatMatch()!.otherUser.firstName }}</h2>
+              <div class="chat-user-info">
+                <span class="tech-tag">
+                  {{ getTechStackEmoji(activeChatMatch()!.otherUser.techStack.toString()) }} {{ activeChatMatch()!.otherUser.techStack }}
+                </span>
+                <span class="experience-tag">
+                  {{ getExperienceEmoji(activeChatMatch()!.otherUser.experience.toString()) }} {{ activeChatMatch()!.otherUser.experience }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Chat Messages -->
+            <div class="chat-messages">
+              @if (activeChat().length > 0) {
+                @for (message of activeChat(); track message.id) {
+                  <div 
+                    class="message"
+                    [class.own-message]="isOwnMessage(message)"
+                    [class.ai-message]="message.isAIGenerated"
+                  >
+                    <div class="message-content">
+                      <div class="message-header">
+                        <span class="message-sender">{{ message.senderUsername }}</span>
+                        @if (message.isAIGenerated) {
+                          <span class="ai-badge">🤖 AI</span>
+                        }
+                        <span class="message-time">{{ formatDate(message.sentAt) }}</span>
+                      </div>
+                      <div class="message-text">{{ message.message }}</div>
+                    </div>
+                  </div>
+                }
+              } @else {
+                <div class="no-messages">
+                  <p>👋 Say hello to start the conversation!</p>
+                </div>
+              }
+            </div>
+
+            <!-- Message Input -->
+            <div class="message-input">
+              <div class="input-container">
+                <textarea
+                  [value]="newMessage()"
+                  (input)="newMessage.set($any($event.target).value)"
+                  (keydown)="onKeyDown($any($event))"
+                  placeholder="Type your message... (Ctrl+Enter to send)"
+                  class="message-textarea"
+                  rows="3"
+                  maxlength="1000"
+                ></textarea>
+                <button 
+                  class="send-btn"
+                  (click)="sendMessage()"
+                  [disabled]="isLoading() || !newMessage().trim()"
+                >
+                  📤 Send
+                </button>
+              </div>
+              <div class="input-help">
+                <span class="char-counter">{{ newMessage().length }}/1000</span>
+                <span class="send-help">Ctrl+Enter to send</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>

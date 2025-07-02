@@ -8,6 +8,7 @@ import {
   BugChaseLeaderboardEntryDto, 
   BugChaseDashboardDto 
 } from '../types/dtos/bug-chase-dtos';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +16,7 @@ import {
 export class BugChaseService {
   private http = inject(HttpClient);
 
-  private readonly API_BASE_URL = 'https://localhost:7276/api/bugchase';
+  private readonly API_BASE_URL = environment.apiUrl + '/bugchase';
 
   private getHttpOptions() {
     return {
